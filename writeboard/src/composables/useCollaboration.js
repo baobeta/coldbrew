@@ -1,8 +1,6 @@
 import { ref, onUnmounted } from 'vue'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
-import { nanoid } from 'nanoid'
-
 const USER_COLORS = [
   '#f44336', '#e91e63', '#9c27b0', '#673ab7',
   '#3f51b5', '#2196f3', '#00bcd4', '#009688',
@@ -13,13 +11,12 @@ function randomColor() {
   return USER_COLORS[Math.floor(Math.random() * USER_COLORS.length)]
 }
 
-function getOrCreateUserName() {
-  let name = localStorage.getItem('writeboard-username')
-  if (!name) {
-    name = 'User-' + nanoid(4)
-    localStorage.setItem('writeboard-username', name)
-  }
-  return name
+export function getStoredUserName() {
+  return localStorage.getItem('writeboard-username')
+}
+
+export function setStoredUserName(name) {
+  localStorage.setItem('writeboard-username', name)
 }
 
 export function useCollaboration(roomId) {
@@ -28,7 +25,7 @@ export function useCollaboration(roomId) {
     signaling: ['wss://signaling.yjs.dev'],
   })
 
-  const userName = getOrCreateUserName()
+  const userName = getStoredUserName()
   const userColor = randomColor()
   const peerCount = ref(1)
   const connectionStatus = ref('connecting')

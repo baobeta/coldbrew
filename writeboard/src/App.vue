@@ -1,6 +1,7 @@
 <template>
   <ErrorBoundary>
-    <HomePage v-if="!roomId" />
+    <UserNameModal v-if="needsName" @submit="onNameSubmit" />
+    <HomePage v-else-if="!roomId" />
     <RoomPage v-else :room-id="roomId" :key="roomId" />
   </ErrorBoundary>
 </template>
@@ -10,8 +11,16 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import HomePage from './components/HomePage.vue'
 import RoomPage from './components/RoomPage.vue'
 import ErrorBoundary from './components/ErrorBoundary.vue'
+import UserNameModal from './components/UserNameModal.vue'
+import { getStoredUserName, setStoredUserName } from './composables/useCollaboration.js'
 
 const roomId = ref(null)
+const needsName = ref(!getStoredUserName())
+
+function onNameSubmit(name) {
+  setStoredUserName(name)
+  needsName.value = false
+}
 
 function parseHash() {
   const hash = window.location.hash
