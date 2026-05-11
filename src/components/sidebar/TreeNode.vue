@@ -1,13 +1,18 @@
 <template>
-  <li class="tree-node" :class="{ 'is-active': node.type === 'page' && node.id === activePageId }">
+  <li :class="{ 'is-active': node.type === 'page' && node.id === activePageId }">
     <div
-      class="tree-node-row"
+      class="flex items-center gap-0.5 px-2 py-[3px] cursor-pointer text-[0.82rem] text-text rounded mx-1 my-px transition-colors select-none h-[26px] hover:bg-black/5"
+      :class="{ 'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]': node.type === 'page' && node.id === activePageId }"
       :style="{ paddingLeft: depth * 16 + 8 + 'px' }"
       @click="handleClick"
       @dblclick="startRename"
       @contextmenu.prevent="showContextMenu"
     >
-      <span v-if="node.type === 'folder'" class="tree-chevron" :class="{ expanded: isExpanded }">
+      <span
+        v-if="node.type === 'folder'"
+        class="inline-flex w-4 h-4 items-center justify-center text-text-light transition-transform duration-150 shrink-0"
+        :class="{ 'tree-chevron-expanded': isExpanded }"
+      >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
           <path
             d="M6 4l4 4-4 4"
@@ -20,7 +25,7 @@
         </svg>
       </span>
 
-      <span class="tree-node-icon">
+      <span class="inline-flex w-4 h-4 items-center justify-center shrink-0 mr-0.5">
         <svg
           v-if="node.type === 'folder' && isExpanded"
           width="16"
@@ -71,20 +76,20 @@
         </svg>
       </span>
 
-      <span v-if="isRenaming" class="tree-rename-wrap" @click.stop>
+      <span v-if="isRenaming" class="flex-1" @click.stop>
         <input
           ref="renameInput"
           v-model="renameValue"
-          class="tree-rename-input"
+          class="w-full px-1 py-px text-[0.82rem] font-ui border border-accent rounded-sm outline-none bg-white"
           @blur="finishRename"
           @keydown.enter="finishRename"
           @keydown.escape="cancelRename"
         />
       </span>
-      <span v-else class="tree-label">{{ node.title }}</span>
+      <span v-else class="overflow-hidden text-ellipsis whitespace-nowrap flex-1 leading-tight">{{ node.title }}</span>
     </div>
 
-    <ul v-if="node.type === 'folder' && isExpanded && node.children?.length" class="tree-children">
+    <ul v-if="node.type === 'folder' && isExpanded && node.children?.length" class="list-none p-0 m-0">
       <TreeNode
         v-for="child in node.children"
         :key="child.id"
@@ -101,9 +106,18 @@
       />
     </ul>
 
-    <div v-if="contextMenu" class="tree-context-menu" :style="contextMenuStyle" @click.stop>
-      <button v-if="node.type === 'folder'" @click="onContextAction('new-page')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <div
+      v-if="contextMenu"
+      class="fixed z-50 bg-white border border-border rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] p-1 min-w-[160px] animate-[context-fade-in_0.1s_ease]"
+      :style="contextMenuStyle"
+      @click.stop
+    >
+      <button
+        v-if="node.type === 'folder'"
+        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
+        @click="onContextAction('new-page')"
+      >
+        <svg class="shrink-0 text-text-muted" width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path
             d="M4.5 1.5h5l3 3v9.5h-8z"
             stroke="currentColor"
@@ -121,8 +135,12 @@
         </svg>
         New Page
       </button>
-      <button v-if="node.type === 'folder'" @click="onContextAction('new-folder')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <button
+        v-if="node.type === 'folder'"
+        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
+        @click="onContextAction('new-folder')"
+      >
+        <svg class="shrink-0 text-text-muted" width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path
             d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z"
             stroke="currentColor"
@@ -133,9 +151,12 @@
         </svg>
         New Folder
       </button>
-      <div v-if="node.type === 'folder'" class="context-menu-divider"></div>
-      <button @click="onContextAction('rename')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <div v-if="node.type === 'folder'" class="h-px bg-border mx-1.5 my-[3px]"></div>
+      <button
+        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
+        @click="onContextAction('rename')"
+      >
+        <svg class="shrink-0 text-text-muted" width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path
             d="M11.5 2.5l2 2-8 8H3.5v-2z"
             stroke="currentColor"
@@ -146,8 +167,11 @@
         </svg>
         Rename
       </button>
-      <button class="danger" @click="onContextAction('delete')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <button
+        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-red-600 text-left cursor-pointer rounded hover:bg-red-600/5"
+        @click="onContextAction('delete')"
+      >
+        <svg class="shrink-0 text-red-600" width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path
             d="M3 4.5h10M5.5 4.5V3.5h5v1M5.5 4.5v8h5v-8"
             stroke="currentColor"
@@ -248,3 +272,9 @@ onUnmounted(() => {
   document.removeEventListener('click', hideContextMenu)
 })
 </script>
+
+<style scoped>
+.tree-chevron-expanded {
+  transform: rotate(90deg);
+}
+</style>

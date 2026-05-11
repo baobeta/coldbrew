@@ -1,5 +1,5 @@
 <template>
-  <div class="room-page">
+  <div class="flex min-h-screen">
     <Sidebar
       :is-open="sidebarOpen"
       :tree="tree"
@@ -13,7 +13,7 @@
       @rename="onRename"
       @delete="deleteNode"
     />
-    <div class="main-area">
+    <div class="flex-1 flex flex-col min-w-0">
       <Toolbar :editor="liveEditor">
         <template #right>
           <MicButton
@@ -24,7 +24,7 @@
           />
           <ShareButton />
           <button
-            class="toolbar-btn sidebar-toggle"
+            class="px-2.5 py-1.5 border-none rounded bg-transparent text-text text-sm font-ui cursor-pointer transition-colors leading-none hover:bg-black/5 text-lg"
             @click="sidebarOpen = !sidebarOpen"
             title="Toggle sidebar"
           >
@@ -43,8 +43,8 @@
         :user-color="userColor"
         @editor-ready="onEditorReady"
       />
-      <div class="status-bar">
-        <span class="connection-status">{{ statusText }}</span>
+      <div class="px-4 py-2 text-right">
+        <span class="text-xs text-text-muted">{{ statusText }}</span>
       </div>
     </div>
   </div>

@@ -1,9 +1,11 @@
 <template>
-  <ErrorBoundary>
-    <UserNameModal v-if="needsName" @submit="onNameSubmit" />
-    <HomePage v-else-if="!roomId" />
-    <RoomPage v-else :room-id="roomId" :key="roomId" />
-  </ErrorBoundary>
+  <div class="w-full min-h-screen">
+    <ErrorBoundary>
+      <UserNameModal v-if="needsName" @submit="onNameSubmit" />
+      <HomePage v-else-if="!roomId" />
+      <RoomPage v-else :room-id="roomId" :key="roomId" />
+    </ErrorBoundary>
+  </div>
 </template>
 
 <script setup>

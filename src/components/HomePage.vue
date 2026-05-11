@@ -1,16 +1,16 @@
 <template>
-  <div class="home-page">
-    <div class="home-content">
-      <h1 class="home-title">Writeboard</h1>
-      <p class="home-subtitle">Voice-first collaborative writing. No signup required.</p>
-      <button class="create-room-btn" @click="createRoom">Create new room</button>
-      <div v-if="recentRooms.length" class="recent-rooms">
-        <h3>Recent rooms</h3>
-        <ul>
-          <li v-for="room in recentRooms" :key="room.id">
-            <a :href="'#room=' + room.id" class="room-link">
+  <div class="flex items-center justify-center min-h-screen p-8">
+    <div class="text-center max-w-[480px]">
+      <h1 class="font-body text-[3.5rem] max-md:text-[2.5rem] font-semibold text-text mb-2">Writeboard</h1>
+      <p class="text-lg text-text-muted mb-8">Voice-first collaborative writing. No signup required.</p>
+      <button class="inline-block px-8 py-3 text-base font-ui font-medium text-white bg-accent border-none rounded-lg cursor-pointer transition-colors hover:bg-accent-hover" @click="createRoom">Create new room</button>
+      <div v-if="recentRooms.length" class="mt-12 text-left">
+        <h3 class="text-sm uppercase tracking-wide text-text-muted mb-3">Recent rooms</h3>
+        <ul class="list-none">
+          <li v-for="room in recentRooms" :key="room.id" class="mb-1">
+            <a :href="'#room=' + room.id" class="flex justify-between items-center px-3 py-2 rounded-md no-underline text-text font-ui text-sm transition-colors hover:bg-bg-sidebar">
               {{ room.id }}
-              <span class="room-date">{{ formatDate(room.lastVisited) }}</span>
+              <span class="text-xs text-text-muted">{{ formatDate(room.lastVisited) }}</span>
             </a>
           </li>
         </ul>

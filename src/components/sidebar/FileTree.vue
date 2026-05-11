@@ -1,6 +1,6 @@
 <template>
-  <div class="file-tree">
-    <ul class="tree-root" v-if="tree.length">
+  <div class="flex-1 overflow-y-auto py-0.5">
+    <ul class="list-none p-0 m-0" v-if="tree.length">
       <TreeNode
         v-for="node in tree"
         :key="node.id"
@@ -16,7 +16,7 @@
         @create-folder="$emit('create-folder', $event)"
       />
     </ul>
-    <div v-else class="tree-empty">No pages yet</div>
+    <div v-else class="p-6 text-center text-[0.82rem] text-text-light">No pages yet</div>
   </div>
 </template>
 

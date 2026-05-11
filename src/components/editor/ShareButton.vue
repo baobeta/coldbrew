@@ -1,6 +1,6 @@
 <template>
   <button
-    class="share-btn toolbar-btn"
+    class="px-3 py-1.5 border border-border rounded-full bg-white font-ui text-sm cursor-pointer transition-all whitespace-nowrap hover:border-text-muted"
     @click="copyLink"
     :title="copied ? 'Copied!' : 'Copy room link'"
   >

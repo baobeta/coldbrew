@@ -1,6 +1,6 @@
 <template>
-  <div class="editor-container">
-    <editor-content :editor="editor" class="editor-content" />
+  <div class="flex-1 flex justify-center p-8 max-md:p-4">
+    <editor-content :editor="editor" class="w-full max-w-[720px]" />
   </div>
 </template>
 

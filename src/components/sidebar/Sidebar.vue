@@ -1,14 +1,21 @@
 <template>
-  <aside class="sidebar" :class="{ open: isOpen }">
-    <div class="sidebar-brand">
-      <span class="sidebar-brand-text">Writeboard</span>
+  <aside
+    class="w-60 bg-bg-sidebar border-r border-border flex flex-col shrink-0 h-screen sticky top-0 transition-all duration-200 max-md:fixed max-md:z-20 max-md:h-screen max-md:shadow-[2px_0_8px_rgba(0,0,0,0.1)]"
+    :class="{ '-translate-x-60 absolute opacity-0 pointer-events-none': !isOpen }"
+  >
+    <div class="px-4 py-3 border-b border-border">
+      <span class="font-body text-base font-semibold text-text tracking-tight">Writeboard</span>
     </div>
     <ParticipantsList :participants="participants" />
-    <div class="sidebar-section">
-      <div class="sidebar-header">
-        <h2 class="sidebar-section-title">Explorer</h2>
-        <div class="sidebar-actions">
-          <button class="sidebar-icon-btn" @click="$emit('create-page', null)" title="New page">
+    <div class="flex flex-col flex-1 min-h-0">
+      <div class="flex items-center justify-between px-4 py-3">
+        <h2 class="text-xs uppercase tracking-wide text-text-muted font-semibold">Explorer</h2>
+        <div class="flex gap-0.5">
+          <button
+            class="w-[26px] h-[26px] flex items-center justify-center border-none rounded bg-transparent text-text-muted cursor-pointer transition-all hover:bg-black/5 hover:text-text"
+            @click="$emit('create-page', null)"
+            title="New page"
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
                 d="M4.5 1.5h5l3 3v9.5h-8z"
@@ -32,7 +39,11 @@
               />
             </svg>
           </button>
-          <button class="sidebar-icon-btn" @click="$emit('create-folder', null)" title="New folder">
+          <button
+            class="w-[26px] h-[26px] flex items-center justify-center border-none rounded bg-transparent text-text-muted cursor-pointer transition-all hover:bg-black/5 hover:text-text"
+            @click="$emit('create-folder', null)"
+            title="New folder"
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path
                 d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z"
