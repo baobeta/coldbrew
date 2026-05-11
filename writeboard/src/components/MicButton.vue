@@ -1,6 +1,5 @@
 <template>
   <button
-    v-if="isSupported"
     class="mic-btn"
     :class="{
       listening: isListening,
@@ -8,13 +7,15 @@
     }"
     :disabled="!!speakerName && !isListening"
     :title="buttonTitle"
-    @click="$emit('toggle')"
+    @click="handleClick"
   >
-    <span class="mic-icon">🎤</span>
+    <svg class="mic-svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 1.5a2 2 0 012 2v4a2 2 0 01-4 0v-4a2 2 0 012-2z" fill="currentColor"/>
+      <path d="M4 7.5a4 4 0 008 0M8 11.5v3M6 14.5h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+    </svg>
     <span v-if="isListening" class="mic-label">Listening...</span>
     <span v-else-if="speakerName" class="mic-label">{{ speakerName }} is speaking</span>
   </button>
-  <span v-else class="mic-unsupported">Voice not supported</span>
 </template>
 
 <script setup>
@@ -25,11 +26,20 @@ const props = defineProps({
   isSupported: { type: Boolean, default: false },
   speakerName: { type: String, default: null },
 })
-defineEmits(['toggle'])
+const emit = defineEmits(['toggle'])
 
 const buttonTitle = computed(() => {
+  if (!props.isSupported) return 'Voice not supported in this browser. Use Chrome or Edge.'
   if (props.isListening) return 'Stop dictation'
   if (props.speakerName) return `${props.speakerName} is speaking`
   return 'Start dictation'
 })
+
+function handleClick() {
+  if (!props.isSupported) {
+    alert('Speech-to-text requires Chrome or Edge browser.')
+    return
+  }
+  emit('toggle')
+}
 </script>
