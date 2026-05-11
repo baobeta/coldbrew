@@ -1,24 +1,8 @@
 import { ref, onUnmounted } from 'vue'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
-import { config } from '../config.js'
-
-function encodeUpdate(update) {
-  const chunks = []
-  for (let i = 0; i < update.length; i += 8192) {
-    chunks.push(String.fromCharCode.apply(null, update.subarray(i, i + 8192)))
-  }
-  return btoa(chunks.join(''))
-}
-
-function decodeUpdate(encoded) {
-  const binary = atob(encoded)
-  const bytes = new Uint8Array(binary.length)
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i)
-  }
-  return bytes
-}
+import { config } from '@/config.js'
+import { useDocPersistence, trackRecentRoom } from '@/composables/useLocalStorage.js'
 
 const USER_COLORS = [
   '#f44336', '#e91e63', '#9c27b0', '#673ab7',
@@ -30,21 +14,13 @@ function randomColor() {
   return USER_COLORS[Math.floor(Math.random() * USER_COLORS.length)]
 }
 
-export function getStoredUserName() {
-  return localStorage.getItem('writeboard-username')
-}
-
-export function setStoredUserName(name) {
-  localStorage.setItem('writeboard-username', name)
-}
-
 export function useCollaboration(roomId) {
   const ydoc = new Y.Doc()
   const provider = new WebrtcProvider(`writeboard-${roomId}`, ydoc, {
     signaling: config.signalingServers,
   })
 
-  const userName = getStoredUserName()
+  const userName = localStorage.getItem('writeboard-username')
   const userColor = randomColor()
   const peerCount = ref(1)
   const participants = ref([])
@@ -82,38 +58,11 @@ export function useCollaboration(roomId) {
     connectionStatus.value = event.connected ? 'connected' : 'disconnected'
   })
 
-  // localStorage persistence: save Y.Doc on changes
-  const docKey = `writeboard-doc-${roomId}`
-  const stored = localStorage.getItem(docKey)
-  if (stored) {
-    Y.applyUpdate(ydoc, decodeUpdate(stored))
-  }
-
-  let saveTimeout = null
-  ydoc.on('update', () => {
-    clearTimeout(saveTimeout)
-    saveTimeout = setTimeout(() => {
-      try {
-        const state = Y.encodeStateAsUpdate(ydoc)
-        const encoded = encodeUpdate(state)
-        localStorage.setItem(docKey, encoded)
-      } catch (e) {
-        console.warn('Failed to save to localStorage:', e)
-      }
-    }, config.docSaveDebounceMs)
-  })
-
-  // Track room in recent rooms list
-  const roomsKey = 'writeboard-rooms'
-  const rooms = JSON.parse(localStorage.getItem(roomsKey) || '[]')
-  const existing = rooms.findIndex(r => r.id === roomId)
-  if (existing >= 0) rooms.splice(existing, 1)
-  rooms.unshift({ id: roomId, lastVisited: Date.now() })
-  if (rooms.length > config.maxRecentRooms) rooms.length = config.maxRecentRooms
-  localStorage.setItem(roomsKey, JSON.stringify(rooms))
+  const { cleanup: cleanupPersistence } = useDocPersistence(ydoc, roomId)
+  trackRecentRoom(roomId)
 
   onUnmounted(() => {
-    clearTimeout(saveTimeout)
+    cleanupPersistence()
     provider.destroy()
     ydoc.destroy()
   })

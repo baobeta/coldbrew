@@ -12,7 +12,7 @@ import HomePage from '@/components/HomePage.vue'
 import RoomPage from '@/components/RoomPage.vue'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import UserNameModal from '@/components/common/UserNameModal.vue'
-import { getStoredUserName, setStoredUserName } from '@/composables/useCollaboration.js'
+import { getStoredUserName, setStoredUserName } from '@/composables/useLocalStorage.js'
 
 const roomId = ref(null)
 const needsName = ref(!getStoredUserName())
