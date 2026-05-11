@@ -1,0 +1,26 @@
+{
+  "name": "writeboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tiptap/extension-collaboration": "^3.23.1",
+    "@tiptap/extension-collaboration-cursor": "^3.0.0",
+    "@tiptap/extension-placeholder": "^3.23.1",
+    "@tiptap/starter-kit": "^3.23.1",
+    "@tiptap/vue-3": "^3.23.1",
+    "nanoid": "^5.1.11",
+    "vue": "^3.5.34",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.30"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.6",
+    "vite": "^8.0.12"
+  }
+}
