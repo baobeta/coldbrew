@@ -1,6 +1,25 @@
 import { ref, onUnmounted } from 'vue'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
+import { config } from '../config.js'
+
+function encodeUpdate(update) {
+  const chunks = []
+  for (let i = 0; i < update.length; i += 8192) {
+    chunks.push(String.fromCharCode.apply(null, update.subarray(i, i + 8192)))
+  }
+  return btoa(chunks.join(''))
+}
+
+function decodeUpdate(encoded) {
+  const binary = atob(encoded)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i)
+  }
+  return bytes
+}
+
 const USER_COLORS = [
   '#f44336', '#e91e63', '#9c27b0', '#673ab7',
   '#3f51b5', '#2196f3', '#00bcd4', '#009688',
@@ -22,7 +41,7 @@ export function setStoredUserName(name) {
 export function useCollaboration(roomId) {
   const ydoc = new Y.Doc()
   const provider = new WebrtcProvider(`writeboard-${roomId}`, ydoc, {
-    signaling: ['wss://signaling.yjs.dev'],
+    signaling: config.signalingServers,
   })
 
   const userName = getStoredUserName()
@@ -67,7 +86,7 @@ export function useCollaboration(roomId) {
   const docKey = `writeboard-doc-${roomId}`
   const stored = localStorage.getItem(docKey)
   if (stored) {
-    Y.applyUpdate(ydoc, Uint8Array.from(atob(stored), c => c.charCodeAt(0)))
+    Y.applyUpdate(ydoc, decodeUpdate(stored))
   }
 
   let saveTimeout = null
@@ -76,12 +95,12 @@ export function useCollaboration(roomId) {
     saveTimeout = setTimeout(() => {
       try {
         const state = Y.encodeStateAsUpdate(ydoc)
-        const encoded = btoa(String.fromCharCode(...state))
+        const encoded = encodeUpdate(state)
         localStorage.setItem(docKey, encoded)
       } catch (e) {
         console.warn('Failed to save to localStorage:', e)
       }
-    }, 500)
+    }, config.docSaveDebounceMs)
   })
 
   // Track room in recent rooms list
@@ -90,7 +109,7 @@ export function useCollaboration(roomId) {
   const existing = rooms.findIndex(r => r.id === roomId)
   if (existing >= 0) rooms.splice(existing, 1)
   rooms.unshift({ id: roomId, lastVisited: Date.now() })
-  if (rooms.length > 20) rooms.length = 20
+  if (rooms.length > config.maxRecentRooms) rooms.length = config.maxRecentRooms
   localStorage.setItem(roomsKey, JSON.stringify(rooms))
 
   onUnmounted(() => {
