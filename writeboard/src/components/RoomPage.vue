@@ -58,9 +58,9 @@ import Sidebar from '@/components/sidebar/Sidebar.vue'
 import MicButton from '@/components/editor/MicButton.vue'
 import ShareButton from '@/components/editor/ShareButton.vue'
 import InterimBanner from '@/components/editor/InterimBanner.vue'
-import { useCollaboration } from '@/composables/useCollaboration.js'
-import { useFileTree } from '@/composables/useFileTree.js'
-import { useVoiceCapture } from '@/composables/useVoiceCapture.js'
+import { useCollaboration } from '@/composables/useCollaboration'
+import { useFileTree } from '@/composables/useFileTree'
+import { useVoiceCapture } from '@/composables/useVoiceCapture'
 
 const props = defineProps({
   roomId: { type: String, required: true },

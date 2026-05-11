@@ -1,10 +1,11 @@
 import { ref, onUnmounted } from 'vue'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
-import { config } from '@/config.js'
-import { useDocPersistence, trackRecentRoom } from '@/composables/useLocalStorage.js'
+import { config } from '@/config'
+import { useDocPersistence, trackRecentRoom } from '@/composables/useLocalStorage'
+import type { Participant, ConnectionStatus, CollaborationReturn } from '@/types'
 
-const USER_COLORS = [
+const USER_COLORS: string[] = [
   '#f44336',
   '#e91e63',
   '#9c27b0',
@@ -19,11 +20,11 @@ const USER_COLORS = [
   '#795548',
 ]
 
-function randomColor() {
+function randomColor(): string {
   return USER_COLORS[Math.floor(Math.random() * USER_COLORS.length)]
 }
 
-export function useCollaboration(roomId) {
+export function useCollaboration(roomId: string): CollaborationReturn {
   const ydoc = new Y.Doc()
   const provider = new WebrtcProvider(`writeboard-${roomId}`, ydoc, {
     signaling: config.signalingServers,
@@ -31,19 +32,19 @@ export function useCollaboration(roomId) {
 
   const userName = localStorage.getItem('writeboard-username')
   const userColor = randomColor()
-  const peerCount = ref(1)
-  const participants = ref([])
-  const connectionStatus = ref('connecting')
+  const peerCount = ref<number>(1)
+  const participants = ref<Participant[]>([])
+  const connectionStatus = ref<ConnectionStatus>('connecting')
 
   provider.awareness.setLocalStateField('user', {
     name: userName,
     color: userColor,
   })
 
-  function syncParticipants() {
-    const states = provider.awareness.getStates()
-    const myId = provider.awareness.clientID
-    const list = []
+  function syncParticipants(): void {
+    const states: Map<number, any> = provider.awareness.getStates()
+    const myId: number = provider.awareness.clientID
+    const list: Participant[] = []
     for (const [clientId, state] of states) {
       if (state.user) {
         list.push({
@@ -63,7 +64,7 @@ export function useCollaboration(roomId) {
   provider.awareness.on('change', syncParticipants)
   syncParticipants()
 
-  provider.on('status', (event) => {
+  provider.on('status', (event: { connected: boolean }) => {
     connectionStatus.value = event.connected ? 'connected' : 'disconnected'
   })
 

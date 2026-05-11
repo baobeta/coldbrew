@@ -1,15 +1,16 @@
 import { ref, onUnmounted } from 'vue'
 
-export function useVoiceCapture(provider, getEditor) {
-  const isListening = ref(false)
-  const interimText = ref('')
-  const isSupported = ref(false)
-  const speakerName = ref(null)
+export function useVoiceCapture(provider: any, getEditor: () => any) {
+  const isListening = ref<boolean>(false)
+  const interimText = ref<string>('')
+  const isSupported = ref<boolean>(false)
+  const speakerName = ref<string | null>(null)
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  const SpeechRecognition =
+    (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
   isSupported.value = !!SpeechRecognition
 
-  let recognition = null
+  let recognition: any = null
   let restartCount = 0
   const MAX_RESTARTS = 3
 
@@ -19,7 +20,8 @@ export function useVoiceCapture(provider, getEditor) {
     recognition.interimResults = true
     recognition.lang = 'en-US'
 
-    recognition.onresult = (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
       let interim = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript
@@ -53,16 +55,16 @@ export function useVoiceCapture(provider, getEditor) {
       }
     }
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       if (event.error === 'not-allowed') {
         stopListening()
       }
     }
   }
 
-  function isSomeoneElseSpeaking() {
-    const states = provider.awareness.getStates()
-    const myId = provider.awareness.clientID
+  function isSomeoneElseSpeaking(): boolean {
+    const states: Map<number, any> = provider.awareness.getStates()
+    const myId: number = provider.awareness.clientID
     for (const [clientId, state] of states) {
       if (clientId !== myId && state.speaking) {
         speakerName.value = state.user?.name || 'Someone'
@@ -74,9 +76,9 @@ export function useVoiceCapture(provider, getEditor) {
 
   provider.awareness.on('change', () => {
     if (!isListening.value) {
-      const states = provider.awareness.getStates()
-      const myId = provider.awareness.clientID
-      let foundSpeaker = null
+      const states: Map<number, any> = provider.awareness.getStates()
+      const myId: number = provider.awareness.clientID
+      let foundSpeaker: string | null = null
       for (const [clientId, state] of states) {
         if (clientId !== myId && state.speaking) {
           foundSpeaker = state.user?.name || 'Someone'
@@ -87,7 +89,7 @@ export function useVoiceCapture(provider, getEditor) {
     }
   })
 
-  function startListening() {
+  function startListening(): void {
     if (!recognition) return
     if (isSomeoneElseSpeaking()) return
 
@@ -101,7 +103,7 @@ export function useVoiceCapture(provider, getEditor) {
     }
   }
 
-  function stopListening() {
+  function stopListening(): void {
     isListening.value = false
     interimText.value = ''
     provider.awareness.setLocalStateField('speaking', false)
@@ -112,7 +114,7 @@ export function useVoiceCapture(provider, getEditor) {
     }
   }
 
-  function toggleListening() {
+  function toggleListening(): void {
     if (isListening.value) {
       stopListening()
     } else {

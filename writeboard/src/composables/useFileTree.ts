@@ -1,6 +1,7 @@
 import { ref, onUnmounted } from 'vue'
 import * as Y from 'yjs'
 import { nanoid } from 'nanoid'
+import type { TreeNode } from '@/types'
 
 /**
  * Approach C: Flat node map + ordered children arrays
@@ -14,45 +15,45 @@ import { nanoid } from 'nanoid'
  * This avoids nesting Y.Array inside Y.Map (which prevents moves).
  */
 
-export function useFileTree(ydoc, provider) {
-  const tree = ref([])
-  const activePageId = ref(null)
-  const expandedFolders = ref(new Set())
+export function useFileTree(ydoc: Y.Doc, provider: any) {
+  const tree = ref<TreeNode[]>([])
+  const activePageId = ref<string | null>(null)
+  const expandedFolders = ref<Set<string>>(new Set())
 
-  const nodesMap = ydoc.getMap('nodes')
-  const rootChildren = ydoc.getArray('rootChildren')
+  const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes')
+  const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren')
 
-  function getChildrenArray(folderId) {
+  function getChildrenArray(folderId: string): Y.Array<string> {
     return ydoc.getArray(`children:${folderId}`)
   }
 
-  function getParentArray(parentId) {
+  function getParentArray(parentId: string | null): Y.Array<string> {
     return parentId ? getChildrenArray(parentId) : rootChildren
   }
 
-  function buildTreeNode(nodeId) {
+  function buildTreeNode(nodeId: string): TreeNode | null {
     const nodeMap = nodesMap.get(nodeId)
     if (!nodeMap) return null
 
-    const node = {
-      id: nodeMap.get('id'),
-      type: nodeMap.get('type'),
-      title: nodeMap.get('title'),
+    const node: TreeNode = {
+      id: nodeMap.get('id') as string,
+      type: nodeMap.get('type') as 'page' | 'folder',
+      title: nodeMap.get('title') as string,
     }
 
     if (node.type === 'folder') {
       const childArr = getChildrenArray(nodeId)
-      node.children = childArr.toArray().map(buildTreeNode).filter(Boolean)
+      node.children = childArr.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[]
     }
 
     return node
   }
 
-  function syncTree() {
-    tree.value = rootChildren.toArray().map(buildTreeNode).filter(Boolean)
+  function syncTree(): void {
+    tree.value = rootChildren.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[]
   }
 
-  function createPage(title = 'Untitled', parentId = null) {
+  function createPage(title = 'Untitled', parentId: string | null = null): string {
     const id = nanoid(8)
 
     ydoc.transact(() => {
@@ -72,7 +73,7 @@ export function useFileTree(ydoc, provider) {
     return id
   }
 
-  function createFolder(title = 'New Folder', parentId = null) {
+  function createFolder(title = 'New Folder', parentId: string | null = null): string {
     const id = nanoid(8)
 
     ydoc.transact(() => {
@@ -90,22 +91,22 @@ export function useFileTree(ydoc, provider) {
     return id
   }
 
-  function rename(id, newTitle) {
+  function rename(id: string, newTitle: string): void {
     const nodeMap = nodesMap.get(id)
     if (nodeMap) nodeMap.set('title', newTitle)
   }
 
-  function removeFromParent(nodeId) {
+  function removeFromParent(nodeId: string): void {
     const nodeMap = nodesMap.get(nodeId)
     if (!nodeMap) return
-    const parentId = nodeMap.get('parentId')
+    const parentId = nodeMap.get('parentId') as string | null
     const parentArr = getParentArray(parentId)
     const arr = parentArr.toArray()
     const idx = arr.indexOf(nodeId)
     if (idx >= 0) parentArr.delete(idx, 1)
   }
 
-  function deleteNode(id) {
+  function deleteNode(id: string): void {
     const nodeMap = nodesMap.get(id)
     if (!nodeMap) return
 
@@ -129,7 +130,7 @@ export function useFileTree(ydoc, provider) {
     }
   }
 
-  function moveNode(nodeId, newParentId, index = -1) {
+  function moveNode(nodeId: string, newParentId: string | null, index = -1): void {
     const nodeMap = nodesMap.get(nodeId)
     if (!nodeMap) return
     if (newParentId === nodeId) return
@@ -145,7 +146,7 @@ export function useFileTree(ydoc, provider) {
     })
   }
 
-  function isDescendant(candidateId, ancestorId) {
+  function isDescendant(candidateId: string, ancestorId: string): boolean {
     const childArr = getChildrenArray(ancestorId)
     for (const childId of childArr.toArray()) {
       if (childId === candidateId) return true
@@ -157,8 +158,8 @@ export function useFileTree(ydoc, provider) {
     return false
   }
 
-  function findFirstPage() {
-    function search(arr) {
+  function findFirstPage(): string | null {
+    function search(arr: Y.Array<string>): string | null {
       for (const id of arr.toArray()) {
         const nodeMap = nodesMap.get(id)
         if (!nodeMap) continue
@@ -173,23 +174,23 @@ export function useFileTree(ydoc, provider) {
     return search(rootChildren)
   }
 
-  function setActivePage(id) {
+  function setActivePage(id: string): void {
     activePageId.value = id
     broadcastActivePage(id)
   }
 
-  function toggleFolder(id) {
+  function toggleFolder(id: string): void {
     const s = new Set(expandedFolders.value)
     if (s.has(id)) s.delete(id)
     else s.add(id)
     expandedFolders.value = s
   }
 
-  function getFragment(id) {
+  function getFragment(id: string): Y.XmlFragment {
     return ydoc.getXmlFragment(`page-${id}`)
   }
 
-  function broadcastActivePage(id) {
+  function broadcastActivePage(id: string | null): void {
     provider.awareness.setLocalStateField('activePage', id)
   }
 
@@ -199,9 +200,9 @@ export function useFileTree(ydoc, provider) {
   rootChildren.observe(syncHandler)
 
   // Also observe all folder children arrays
-  const folderObservers = new Map()
+  const folderObservers = new Map<string, Y.Array<string>>()
 
-  function observeFolderChildren() {
+  function observeFolderChildren(): void {
     for (const [id, nodeMap] of nodesMap) {
       if (nodeMap.get('type') === 'folder' && !folderObservers.has(id)) {
         const childArr = getChildrenArray(id)

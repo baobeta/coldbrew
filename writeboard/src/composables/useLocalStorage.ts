@@ -1,15 +1,15 @@
 import * as Y from 'yjs'
-import { config } from '@/config.js'
+import { config } from '@/config'
 
-function encodeUpdate(update) {
-  const chunks = []
+function encodeUpdate(update: Uint8Array): string {
+  const chunks: string[] = []
   for (let i = 0; i < update.length; i += 8192) {
-    chunks.push(String.fromCharCode.apply(null, update.subarray(i, i + 8192)))
+    chunks.push(String.fromCharCode.apply(null, Array.from(update.subarray(i, i + 8192))))
   }
   return btoa(chunks.join(''))
 }
 
-function decodeUpdate(encoded) {
+function decodeUpdate(encoded: string): Uint8Array {
   const binary = atob(encoded)
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) {
@@ -18,24 +18,24 @@ function decodeUpdate(encoded) {
   return bytes
 }
 
-export function getStoredUserName() {
+export function getStoredUserName(): string | null {
   return localStorage.getItem('writeboard-username')
 }
 
-export function setStoredUserName(name) {
+export function setStoredUserName(name: string): void {
   localStorage.setItem('writeboard-username', name)
 }
 
-export function useDocPersistence(ydoc, roomId) {
+export function useDocPersistence(ydoc: Y.Doc, roomId: string): { cleanup: () => void } {
   const docKey = `writeboard-doc-${roomId}`
   const stored = localStorage.getItem(docKey)
   if (stored) {
     Y.applyUpdate(ydoc, decodeUpdate(stored))
   }
 
-  let saveTimeout = null
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null
   ydoc.on('update', () => {
-    clearTimeout(saveTimeout)
+    if (saveTimeout !== null) clearTimeout(saveTimeout)
     saveTimeout = setTimeout(() => {
       try {
         const state = Y.encodeStateAsUpdate(ydoc)
@@ -49,14 +49,19 @@ export function useDocPersistence(ydoc, roomId) {
 
   return {
     cleanup() {
-      clearTimeout(saveTimeout)
+      if (saveTimeout !== null) clearTimeout(saveTimeout)
     },
   }
 }
 
-export function trackRecentRoom(roomId) {
+interface RecentRoom {
+  id: string
+  lastVisited: number
+}
+
+export function trackRecentRoom(roomId: string): void {
   const roomsKey = 'writeboard-rooms'
-  const rooms = JSON.parse(localStorage.getItem(roomsKey) || '[]')
+  const rooms: RecentRoom[] = JSON.parse(localStorage.getItem(roomsKey) || '[]')
   const existing = rooms.findIndex((r) => r.id === roomId)
   if (existing >= 0) rooms.splice(existing, 1)
   rooms.unshift({ id: roomId, lastVisited: Date.now() })

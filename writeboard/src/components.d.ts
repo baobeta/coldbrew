@@ -14,6 +14,7 @@ declare module 'vue' {
     ErrorBoundary: typeof import('./components/common/ErrorBoundary.vue')['default']
     FileTree: typeof import('./components/sidebar/FileTree.vue')['default']
     HomePage: typeof import('./components/HomePage.vue')['default']
+    Icon: typeof import('./components/common/Icon.vue')['default']
     InterimBanner: typeof import('./components/editor/InterimBanner.vue')['default']
     MicButton: typeof import('./components/editor/MicButton.vue')['default']
     ParticipantsList: typeof import('./components/sidebar/ParticipantsList.vue')['default']

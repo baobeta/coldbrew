@@ -1,14 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as Y from 'yjs'
-import { useFileTree } from '../useFileTree.js'
-import { ref } from 'vue'
+import { useFileTree } from '../useFileTree'
 
 // Mock provider with minimal awareness API
 function createMockProvider() {
-  const localState = {}
+  const localState: Record<string, unknown> = {}
   return {
     awareness: {
-      setLocalStateField(key, value) {
+      setLocalStateField(key: string, value: unknown) {
         localState[key] = value
       },
       getStates() {
@@ -20,7 +19,6 @@ function createMockProvider() {
 }
 
 // Disable onUnmounted since we're not in a component
-import { vi } from 'vitest'
 vi.mock('vue', async () => {
   const actual = await vi.importActual('vue')
   return {
@@ -30,9 +28,9 @@ vi.mock('vue', async () => {
 })
 
 describe('useFileTree', () => {
-  let ydoc
-  let provider
-  let fileTree
+  let ydoc: Y.Doc
+  let provider: ReturnType<typeof createMockProvider>
+  let fileTree: ReturnType<typeof useFileTree>
 
   beforeEach(() => {
     ydoc = new Y.Doc()
