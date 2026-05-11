@@ -48,15 +48,15 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import TiptapEditor from './TiptapEditor.vue'
-import Toolbar from './Toolbar.vue'
-import Sidebar from './Sidebar.vue'
-import MicButton from './MicButton.vue'
-import ShareButton from './ShareButton.vue'
-import InterimBanner from './InterimBanner.vue'
-import { useCollaboration } from '../composables/useCollaboration.js'
-import { useFileTree } from '../composables/useFileTree.js'
-import { useVoiceCapture } from '../composables/useVoiceCapture.js'
+import TiptapEditor from '@/components/editor/TiptapEditor.vue'
+import Toolbar from '@/components/editor/Toolbar.vue'
+import Sidebar from '@/components/sidebar/Sidebar.vue'
+import MicButton from '@/components/editor/MicButton.vue'
+import ShareButton from '@/components/editor/ShareButton.vue'
+import InterimBanner from '@/components/editor/InterimBanner.vue'
+import { useCollaboration } from '@/composables/useCollaboration.js'
+import { useFileTree } from '@/composables/useFileTree.js'
+import { useVoiceCapture } from '@/composables/useVoiceCapture.js'
 
 const props = defineProps({
   roomId: { type: String, required: true }

@@ -8,11 +8,11 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import HomePage from './components/HomePage.vue'
-import RoomPage from './components/RoomPage.vue'
-import ErrorBoundary from './components/ErrorBoundary.vue'
-import UserNameModal from './components/UserNameModal.vue'
-import { getStoredUserName, setStoredUserName } from './composables/useCollaboration.js'
+import HomePage from '@/components/HomePage.vue'
+import RoomPage from '@/components/RoomPage.vue'
+import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
+import UserNameModal from '@/components/common/UserNameModal.vue'
+import { getStoredUserName, setStoredUserName } from '@/composables/useCollaboration.js'
 
 const roomId = ref(null)
 const needsName = ref(!getStoredUserName())
