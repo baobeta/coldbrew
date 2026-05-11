@@ -2,11 +2,16 @@
   <div class="room-page">
     <Sidebar
       :is-open="sidebarOpen"
-      :pages="pages"
+      :tree="tree"
       :active-page-id="activePageId"
+      :expanded-folders="expandedFolders"
       :participants="participants"
-      @create-page="createPage()"
-      @select-page="switchPage"
+      @create-page="createPage('Untitled', $event)"
+      @create-folder="createFolder('New Folder', $event)"
+      @select-page="setActivePage"
+      @toggle-folder="toggleFolder"
+      @rename="onRename"
+      @delete="deleteNode"
     />
     <div class="main-area">
       <Toolbar :editor="currentEditor">
@@ -50,7 +55,7 @@ import MicButton from './MicButton.vue'
 import ShareButton from './ShareButton.vue'
 import InterimBanner from './InterimBanner.vue'
 import { useCollaboration } from '../composables/useCollaboration.js'
-import { usePages } from '../composables/usePages.js'
+import { useFileTree } from '../composables/useFileTree.js'
 import { useVoiceCapture } from '../composables/useVoiceCapture.js'
 
 const props = defineProps({
@@ -61,7 +66,11 @@ const sidebarOpen = ref(window.innerWidth >= 768)
 const editorRef = ref(null)
 
 const { ydoc, provider, userName, userColor, peerCount, participants, connectionStatus } = useCollaboration(props.roomId)
-const { pages, activePageId, createPage, setActivePage, getFragment } = usePages(ydoc, provider)
+const {
+  tree, activePageId, expandedFolders,
+  createPage, createFolder, rename, deleteNode,
+  moveNode, setActivePage, toggleFolder, getFragment,
+} = useFileTree(ydoc, provider)
 
 const currentFragment = computed(() => {
   if (!activePageId.value) return null
@@ -75,8 +84,8 @@ const { isListening, interimText, isSupported, speakerName, toggleListening } = 
   () => editorRef.value?.editor?.value
 )
 
-function switchPage(id) {
-  setActivePage(id)
+function onRename({ id, title }) {
+  rename(id, title)
 }
 
 const statusText = computed(() => {
