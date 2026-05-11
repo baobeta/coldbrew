@@ -1,12 +1,15 @@
 <template>
-  <HomePage v-if="!roomId" />
-  <RoomPage v-else :room-id="roomId" :key="roomId" />
+  <ErrorBoundary>
+    <HomePage v-if="!roomId" />
+    <RoomPage v-else :room-id="roomId" :key="roomId" />
+  </ErrorBoundary>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import HomePage from './components/HomePage.vue'
 import RoomPage from './components/RoomPage.vue'
+import ErrorBoundary from './components/ErrorBoundary.vue'
 
 const roomId = ref(null)
 
