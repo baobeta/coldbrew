@@ -1,6 +1,6 @@
 <template>
-  <div class="toolbar" v-if="editor">
-    <div class="toolbar-left">
+  <div class="toolbar">
+    <div class="toolbar-left" v-if="editor">
       <div class="toolbar-group">
         <button
           @click="editor.chain().focus().toggleBold().run()"
@@ -58,6 +58,7 @@
         </button>
       </div>
     </div>
+    <div v-else class="toolbar-left"></div>
     <div class="toolbar-right">
       <slot name="right" />
     </div>
