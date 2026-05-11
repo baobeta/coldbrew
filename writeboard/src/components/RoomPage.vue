@@ -4,7 +4,7 @@
       :is-open="sidebarOpen"
       :pages="pages"
       :active-page-id="activePageId"
-      :peer-count="peerCount"
+      :participants="participants"
       @create-page="createPage()"
       @select-page="switchPage"
     />
@@ -58,7 +58,7 @@ const props = defineProps({
 const sidebarOpen = ref(window.innerWidth >= 768)
 const editorRef = ref(null)
 
-const { ydoc, provider, peerCount, connectionStatus } = useCollaboration(props.roomId)
+const { ydoc, provider, peerCount, participants, connectionStatus } = useCollaboration(props.roomId)
 const { pages, activePageId, createPage, setActivePage, getFragment } = usePages(ydoc, provider)
 
 const currentFragment = computed(() => {

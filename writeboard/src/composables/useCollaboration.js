@@ -28,6 +28,7 @@ export function useCollaboration(roomId) {
   const userName = getStoredUserName()
   const userColor = randomColor()
   const peerCount = ref(1)
+  const participants = ref([])
   const connectionStatus = ref('connecting')
 
   provider.awareness.setLocalStateField('user', {
@@ -35,9 +36,28 @@ export function useCollaboration(roomId) {
     color: userColor,
   })
 
-  provider.awareness.on('change', () => {
-    peerCount.value = provider.awareness.getStates().size
-  })
+  function syncParticipants() {
+    const states = provider.awareness.getStates()
+    const myId = provider.awareness.clientID
+    const list = []
+    for (const [clientId, state] of states) {
+      if (state.user) {
+        list.push({
+          clientId,
+          name: state.user.name || 'Anonymous',
+          color: state.user.color || '#888',
+          speaking: !!state.speaking,
+          isLocal: clientId === myId,
+        })
+      }
+    }
+    list.sort((a, b) => (a.isLocal ? -1 : b.isLocal ? 1 : 0))
+    participants.value = list
+    peerCount.value = states.size
+  }
+
+  provider.awareness.on('change', syncParticipants)
+  syncParticipants()
 
   provider.on('status', (event) => {
     connectionStatus.value = event.connected ? 'connected' : 'disconnected'
@@ -85,6 +105,7 @@ export function useCollaboration(roomId) {
     userName,
     userColor,
     peerCount,
+    participants,
     connectionStatus,
   }
 }
