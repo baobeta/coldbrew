@@ -31,6 +31,8 @@
         :ydoc="ydoc"
         :provider="provider"
         :fragment="currentFragment"
+        :user-name="userName"
+        :user-color="userColor"
       />
       <div class="status-bar">
         <span class="connection-status">{{ statusText }}</span>
@@ -58,7 +60,7 @@ const props = defineProps({
 const sidebarOpen = ref(window.innerWidth >= 768)
 const editorRef = ref(null)
 
-const { ydoc, provider, peerCount, participants, connectionStatus } = useCollaboration(props.roomId)
+const { ydoc, provider, userName, userColor, peerCount, participants, connectionStatus } = useCollaboration(props.roomId)
 const { pages, activePageId, createPage, setActivePage, getFragment } = usePages(ydoc, provider)
 
 const currentFragment = computed(() => {

@@ -10,11 +10,14 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Collaboration from '@tiptap/extension-collaboration'
+import CollaborationCursor from '../extensions/collaborationCursor.js'
 
 const props = defineProps({
   ydoc: { type: Object, default: null },
   provider: { type: Object, default: null },
   fragment: { type: Object, default: null },
+  userName: { type: String, default: null },
+  userColor: { type: String, default: null },
 })
 
 const extensions = [
@@ -30,6 +33,13 @@ const extensions = [
 if (props.ydoc && props.provider && props.fragment) {
   extensions.push(
     Collaboration.configure({ fragment: props.fragment }),
+    CollaborationCursor.configure({
+      provider: props.provider,
+      user: {
+        name: props.userName,
+        color: props.userColor,
+      },
+    }),
   )
 }
 
