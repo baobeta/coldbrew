@@ -50,7 +50,7 @@ describe('useFileTree', () => {
   it('creates a page at root', () => {
     const id = fileTree.createPage('My Page')
     expect(id).toBeTruthy()
-    const page = fileTree.tree.value.find(n => n.id === id)
+    const page = fileTree.tree.value.find((n) => n.id === id)
     expect(page).toBeTruthy()
     expect(page.title).toBe('My Page')
     expect(page.type).toBe('page')
@@ -58,7 +58,7 @@ describe('useFileTree', () => {
 
   it('creates a folder at root', () => {
     const id = fileTree.createFolder('My Folder')
-    const folder = fileTree.tree.value.find(n => n.id === id)
+    const folder = fileTree.tree.value.find((n) => n.id === id)
     expect(folder).toBeTruthy()
     expect(folder.title).toBe('My Folder')
     expect(folder.type).toBe('folder')
@@ -68,7 +68,7 @@ describe('useFileTree', () => {
   it('creates a page inside a folder', () => {
     const folderId = fileTree.createFolder('Folder')
     const pageId = fileTree.createPage('Nested Page', folderId)
-    const folder = fileTree.tree.value.find(n => n.id === folderId)
+    const folder = fileTree.tree.value.find((n) => n.id === folderId)
     expect(folder.children.length).toBe(1)
     expect(folder.children[0].id).toBe(pageId)
     expect(folder.children[0].title).toBe('Nested Page')
@@ -77,7 +77,7 @@ describe('useFileTree', () => {
   it('renames a node', () => {
     const id = fileTree.createPage('Old Name')
     fileTree.rename(id, 'New Name')
-    const page = fileTree.tree.value.find(n => n.id === id)
+    const page = fileTree.tree.value.find((n) => n.id === id)
     expect(page.title).toBe('New Name')
   })
 
@@ -86,7 +86,7 @@ describe('useFileTree', () => {
     const countBefore = fileTree.tree.value.length
     fileTree.deleteNode(id)
     expect(fileTree.tree.value.length).toBe(countBefore - 1)
-    expect(fileTree.tree.value.find(n => n.id === id)).toBeUndefined()
+    expect(fileTree.tree.value.find((n) => n.id === id)).toBeUndefined()
   })
 
   it('deletes a folder and its children', () => {
@@ -94,18 +94,18 @@ describe('useFileTree', () => {
     fileTree.createPage('Child 1', folderId)
     fileTree.createPage('Child 2', folderId)
     fileTree.deleteNode(folderId)
-    expect(fileTree.tree.value.find(n => n.id === folderId)).toBeUndefined()
+    expect(fileTree.tree.value.find((n) => n.id === folderId)).toBeUndefined()
   })
 
   it('moves a page to a folder', () => {
     const pageId = fileTree.createPage('Movable')
     const folderId = fileTree.createFolder('Target')
     fileTree.moveNode(pageId, folderId)
-    const folder = fileTree.tree.value.find(n => n.id === folderId)
+    const folder = fileTree.tree.value.find((n) => n.id === folderId)
     expect(folder.children.length).toBe(1)
     expect(folder.children[0].id).toBe(pageId)
     // Should no longer be at root
-    expect(fileTree.tree.value.find(n => n.id === pageId)).toBeUndefined()
+    expect(fileTree.tree.value.find((n) => n.id === pageId)).toBeUndefined()
   })
 
   it('prevents moving a folder into its own descendant', () => {
@@ -114,7 +114,7 @@ describe('useFileTree', () => {
     // Try to move Parent into Child — should be blocked
     fileTree.moveNode(parentId, childId)
     // Parent should still be at root
-    expect(fileTree.tree.value.find(n => n.id === parentId)).toBeTruthy()
+    expect(fileTree.tree.value.find((n) => n.id === parentId)).toBeTruthy()
   })
 
   it('toggles folder expansion', () => {

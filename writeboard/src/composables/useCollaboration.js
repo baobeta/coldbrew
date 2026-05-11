@@ -5,9 +5,18 @@ import { config } from '@/config.js'
 import { useDocPersistence, trackRecentRoom } from '@/composables/useLocalStorage.js'
 
 const USER_COLORS = [
-  '#f44336', '#e91e63', '#9c27b0', '#673ab7',
-  '#3f51b5', '#2196f3', '#00bcd4', '#009688',
-  '#4caf50', '#ff9800', '#ff5722', '#795548',
+  '#f44336',
+  '#e91e63',
+  '#9c27b0',
+  '#673ab7',
+  '#3f51b5',
+  '#2196f3',
+  '#00bcd4',
+  '#009688',
+  '#4caf50',
+  '#ff9800',
+  '#ff5722',
+  '#795548',
 ]
 
 function randomColor() {

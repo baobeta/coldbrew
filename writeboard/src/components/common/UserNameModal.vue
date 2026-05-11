@@ -11,9 +11,7 @@
         maxlength="30"
         @keydown.enter="submit"
       />
-      <button class="modal-btn" :disabled="!name.trim()" @click="submit">
-        Continue
-      </button>
+      <button class="modal-btn" :disabled="!name.trim()" @click="submit">Continue</button>
     </div>
   </div>
 </template>

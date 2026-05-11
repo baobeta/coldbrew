@@ -9,22 +9,65 @@
     >
       <span v-if="node.type === 'folder'" class="tree-chevron" :class="{ expanded: isExpanded }">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <path
+            d="M6 4l4 4-4 4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </span>
 
       <span class="tree-node-icon">
-        <svg v-if="node.type === 'folder' && isExpanded" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z" stroke="#e8a848" stroke-width="1.2" fill="#fef3c7" stroke-linejoin="round"/>
-          <path d="M1.5 5h13" stroke="#e8a848" stroke-width="1"/>
+        <svg
+          v-if="node.type === 'folder' && isExpanded"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <path
+            d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z"
+            stroke="#e8a848"
+            stroke-width="1.2"
+            fill="#fef3c7"
+            stroke-linejoin="round"
+          />
+          <path d="M1.5 5h13" stroke="#e8a848" stroke-width="1" />
         </svg>
-        <svg v-else-if="node.type === 'folder'" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z" stroke="#d4a843" stroke-width="1.2" fill="#fde68a" stroke-linejoin="round"/>
+        <svg
+          v-else-if="node.type === 'folder'"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <path
+            d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z"
+            stroke="#d4a843"
+            stroke-width="1.2"
+            fill="#fde68a"
+            stroke-linejoin="round"
+          />
         </svg>
         <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M4.5 1.5h5l3 3v9.5h-8z" stroke="#94a3b8" stroke-width="1.2" fill="#f1f5f9" stroke-linejoin="round"/>
-          <path d="M9.5 1.5v3h3" stroke="#94a3b8" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
-          <path d="M6 7.5h4M6 9.5h3" stroke="#94a3b8" stroke-width="1" stroke-linecap="round"/>
+          <path
+            d="M4.5 1.5h5l3 3v9.5h-8z"
+            stroke="#94a3b8"
+            stroke-width="1.2"
+            fill="#f1f5f9"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M9.5 1.5v3h3"
+            stroke="#94a3b8"
+            stroke-width="1.2"
+            fill="none"
+            stroke-linejoin="round"
+          />
+          <path d="M6 7.5h4M6 9.5h3" stroke="#94a3b8" stroke-width="1" stroke-linecap="round" />
         </svg>
       </span>
 
@@ -60,20 +103,59 @@
 
     <div v-if="contextMenu" class="tree-context-menu" :style="contextMenuStyle" @click.stop>
       <button v-if="node.type === 'folder'" @click="onContextAction('new-page')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4.5 1.5h5l3 3v9.5h-8z" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linejoin="round"/><path d="M9.5 1.5v3h3" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M4.5 1.5h5l3 3v9.5h-8z"
+            stroke="currentColor"
+            stroke-width="1.2"
+            fill="none"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M9.5 1.5v3h3"
+            stroke="currentColor"
+            stroke-width="1.2"
+            fill="none"
+            stroke-linejoin="round"
+          />
+        </svg>
         New Page
       </button>
       <button v-if="node.type === 'folder'" @click="onContextAction('new-folder')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z"
+            stroke="currentColor"
+            stroke-width="1.2"
+            fill="none"
+            stroke-linejoin="round"
+          />
+        </svg>
         New Folder
       </button>
       <div v-if="node.type === 'folder'" class="context-menu-divider"></div>
       <button @click="onContextAction('rename')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2-8 8H3.5v-2z" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M11.5 2.5l2 2-8 8H3.5v-2z"
+            stroke="currentColor"
+            stroke-width="1.2"
+            fill="none"
+            stroke-linejoin="round"
+          />
+        </svg>
         Rename
       </button>
       <button class="danger" @click="onContextAction('delete')">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4.5h10M5.5 4.5V3.5h5v1M5.5 4.5v8h5v-8" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M3 4.5h10M5.5 4.5V3.5h5v1M5.5 4.5v8h5v-8"
+            stroke="currentColor"
+            stroke-width="1.2"
+            fill="none"
+            stroke-linejoin="round"
+          />
+        </svg>
         Delete
       </button>
     </div>
@@ -90,7 +172,14 @@ const props = defineProps({
   expandedFolders: { type: Set, default: () => new Set() },
 })
 
-const emit = defineEmits(['select-page', 'toggle-folder', 'rename', 'delete', 'create-page', 'create-folder'])
+const emit = defineEmits([
+  'select-page',
+  'toggle-folder',
+  'rename',
+  'delete',
+  'create-page',
+  'create-folder',
+])
 
 const isExpanded = computed(() => props.expandedFolders.has(props.node.id))
 

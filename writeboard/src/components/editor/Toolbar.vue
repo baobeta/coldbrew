@@ -67,6 +67,6 @@
 
 <script setup>
 defineProps({
-  editor: { type: Object, default: null }
+  editor: { type: Object, default: null },
 })
 </script>

@@ -1,5 +1,9 @@
 <template>
-  <button class="share-btn toolbar-btn" @click="copyLink" :title="copied ? 'Copied!' : 'Copy room link'">
+  <button
+    class="share-btn toolbar-btn"
+    @click="copyLink"
+    :title="copied ? 'Copied!' : 'Copy room link'"
+  >
     {{ copied ? '✓ Copied' : '🔗 Share' }}
   </button>
 </template>
@@ -21,6 +25,8 @@ async function copyLink() {
     document.body.removeChild(textArea)
   }
   copied.value = true
-  setTimeout(() => { copied.value = false }, 2000)
+  setTimeout(() => {
+    copied.value = false
+  }, 2000)
 }
 </script>

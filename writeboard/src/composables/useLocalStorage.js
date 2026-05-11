@@ -57,7 +57,7 @@ export function useDocPersistence(ydoc, roomId) {
 export function trackRecentRoom(roomId) {
   const roomsKey = 'writeboard-rooms'
   const rooms = JSON.parse(localStorage.getItem(roomsKey) || '[]')
-  const existing = rooms.findIndex(r => r.id === roomId)
+  const existing = rooms.findIndex((r) => r.id === roomId)
   if (existing >= 0) rooms.splice(existing, 1)
   rooms.unshift({ id: roomId, lastVisited: Date.now() })
   if (rooms.length > config.maxRecentRooms) rooms.length = config.maxRecentRooms

@@ -26,7 +26,11 @@ export function useVoiceCapture(provider, getEditor) {
         if (event.results[i].isFinal) {
           const editor = getEditor()
           if (editor) {
-            editor.chain().focus().insertContent(transcript + ' ').run()
+            editor
+              .chain()
+              .focus()
+              .insertContent(transcript + ' ')
+              .run()
           }
           interimText.value = ''
         } else {
@@ -40,7 +44,9 @@ export function useVoiceCapture(provider, getEditor) {
       if (isListening.value) {
         if (restartCount < MAX_RESTARTS) {
           restartCount++
-          try { recognition.start() } catch (e) {}
+          try {
+            recognition.start()
+          } catch (e) {}
         } else {
           stopListening()
         }
@@ -100,7 +106,9 @@ export function useVoiceCapture(provider, getEditor) {
     interimText.value = ''
     provider.awareness.setLocalStateField('speaking', false)
     if (recognition) {
-      try { recognition.stop() } catch (e) {}
+      try {
+        recognition.stop()
+      } catch (e) {}
     }
   }
 

@@ -3,9 +3,7 @@
     <div class="home-content">
       <h1 class="home-title">Writeboard</h1>
       <p class="home-subtitle">Voice-first collaborative writing. No signup required.</p>
-      <button class="create-room-btn" @click="createRoom">
-        Create new room
-      </button>
+      <button class="create-room-btn" @click="createRoom">Create new room</button>
       <div v-if="recentRooms.length" class="recent-rooms">
         <h3>Recent rooms</h3>
         <ul>

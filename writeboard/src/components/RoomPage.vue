@@ -23,7 +23,11 @@
             @toggle="toggleListening"
           />
           <ShareButton />
-          <button class="toolbar-btn sidebar-toggle" @click="sidebarOpen = !sidebarOpen" title="Toggle sidebar">
+          <button
+            class="toolbar-btn sidebar-toggle"
+            @click="sidebarOpen = !sidebarOpen"
+            title="Toggle sidebar"
+          >
             ☰
           </button>
         </template>
@@ -59,17 +63,26 @@ import { useFileTree } from '@/composables/useFileTree.js'
 import { useVoiceCapture } from '@/composables/useVoiceCapture.js'
 
 const props = defineProps({
-  roomId: { type: String, required: true }
+  roomId: { type: String, required: true },
 })
 
 const sidebarOpen = ref(window.innerWidth >= 768)
 const liveEditor = ref(null)
 
-const { ydoc, provider, userName, userColor, peerCount, participants, connectionStatus } = useCollaboration(props.roomId)
+const { ydoc, provider, userName, userColor, peerCount, participants, connectionStatus } =
+  useCollaboration(props.roomId)
 const {
-  tree, activePageId, expandedFolders,
-  createPage, createFolder, rename, deleteNode,
-  moveNode, setActivePage, toggleFolder, getFragment,
+  tree,
+  activePageId,
+  expandedFolders,
+  createPage,
+  createFolder,
+  rename,
+  deleteNode,
+  moveNode,
+  setActivePage,
+  toggleFolder,
+  getFragment,
 } = useFileTree(ydoc, provider)
 
 const currentFragment = computed(() => {
@@ -83,7 +96,7 @@ function onEditorReady(editor) {
 
 const { isListening, interimText, isSupported, speakerName, toggleListening } = useVoiceCapture(
   provider,
-  () => liveEditor.value
+  () => liveEditor.value,
 )
 
 function onRename({ id, title }) {
