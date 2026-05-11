@@ -43,9 +43,14 @@ if (props.ydoc && props.provider && props.fragment) {
   )
 }
 
+const emit = defineEmits(['editor-ready'])
+
 const editor = useEditor({
   extensions,
   autofocus: true,
+  onCreate({ editor: editorInstance }) {
+    emit('editor-ready', editorInstance)
+  },
 })
 
 onBeforeUnmount(() => {

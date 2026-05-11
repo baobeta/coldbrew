@@ -26,7 +26,7 @@ export function useVoiceCapture(provider, getEditor) {
         if (event.results[i].isFinal) {
           const editor = getEditor()
           if (editor) {
-            editor.commands.insertContent(transcript + ' ')
+            editor.chain().focus().insertContent(transcript + ' ').run()
           }
           interimText.value = ''
         } else {

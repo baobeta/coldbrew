@@ -14,7 +14,7 @@
       @delete="deleteNode"
     />
     <div class="main-area">
-      <Toolbar :editor="currentEditor">
+      <Toolbar :editor="liveEditor">
         <template #right>
           <MicButton
             :is-listening="isListening"
@@ -32,12 +32,12 @@
       <TiptapEditor
         v-if="activePageId"
         :key="activePageId"
-        ref="editorRef"
         :ydoc="ydoc"
         :provider="provider"
         :fragment="currentFragment"
         :user-name="userName"
         :user-color="userColor"
+        @editor-ready="onEditorReady"
       />
       <div class="status-bar">
         <span class="connection-status">{{ statusText }}</span>
@@ -63,7 +63,7 @@ const props = defineProps({
 })
 
 const sidebarOpen = ref(window.innerWidth >= 768)
-const editorRef = ref(null)
+const liveEditor = ref(null)
 
 const { ydoc, provider, userName, userColor, peerCount, participants, connectionStatus } = useCollaboration(props.roomId)
 const {
@@ -77,11 +77,13 @@ const currentFragment = computed(() => {
   return getFragment(activePageId.value)
 })
 
-const currentEditor = computed(() => editorRef.value?.editor?.value)
+function onEditorReady(editor) {
+  liveEditor.value = editor
+}
 
 const { isListening, interimText, isSupported, speakerName, toggleListening } = useVoiceCapture(
   provider,
-  () => editorRef.value?.editor?.value
+  () => liveEditor.value
 )
 
 function onRename({ id, title }) {
