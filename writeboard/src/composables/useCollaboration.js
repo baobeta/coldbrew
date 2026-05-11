@@ -25,7 +25,7 @@ function getOrCreateUserName() {
 export function useCollaboration(roomId) {
   const ydoc = new Y.Doc()
   const provider = new WebrtcProvider(`writeboard-${roomId}`, ydoc, {
-    signaling: ['wss://signaling.yjs.dev', 'wss://y-webrtc-signaling-eu.herokuapp.com'],
+    signaling: ['wss://signaling.yjs.dev'],
   })
 
   const userName = getOrCreateUserName()
@@ -42,8 +42,8 @@ export function useCollaboration(roomId) {
     peerCount.value = provider.awareness.getStates().size
   })
 
-  provider.on('status', ({ status }) => {
-    connectionStatus.value = status
+  provider.on('status', (event) => {
+    connectionStatus.value = event.connected ? 'connected' : 'disconnected'
   })
 
   // localStorage persistence: save Y.Doc on changes

@@ -21,6 +21,7 @@ const props = defineProps({
 const extensions = [
   StarterKit.configure({
     history: props.ydoc ? false : undefined,
+    undoRedo: props.ydoc ? false : undefined,
   }),
   Placeholder.configure({
     placeholder: 'Start typing or tap the mic to dictate...',
