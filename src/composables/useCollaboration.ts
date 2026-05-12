@@ -73,11 +73,10 @@ export function useCollaboration(roomId: string): CollaborationReturn {
     connectionStatus.value = event.connected ? 'connected' : 'disconnected';
   });
 
-  const { cleanup: cleanupPersistence } = useDocPersistence(ydoc, roomId);
+  useDocPersistence(ydoc, roomId);
   trackRecentRoom(roomId);
 
   onUnmounted(() => {
-    cleanupPersistence();
     provider.destroy();
     ydoc.destroy();
   });

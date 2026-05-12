@@ -9,12 +9,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref } from 'vue';
 import HomePage from '@/components/HomePage.vue';
 import RoomPage from '@/components/RoomPage.vue';
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue';
 import UserNameModal from '@/components/common/UserNameModal.vue';
 import { getStoredUserName, setStoredUserName } from '@/composables/useLocalStorage';
+import { useEventListener } from '@vueuse/core';
 
 const roomId = ref(null);
 const needsName = ref(!getStoredUserName());
@@ -30,12 +31,5 @@ function parseHash() {
   roomId.value = match ? match[1] : null;
 }
 
-onMounted(() => {
-  parseHash();
-  window.addEventListener('hashchange', parseHash);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('hashchange', parseHash);
-});
+useEventListener('hashchange', () => parseHash);
 </script>

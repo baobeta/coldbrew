@@ -1,21 +1,18 @@
 import * as Y from 'yjs';
 import { config } from '@/config';
+import { useDebounceFn } from '@vueuse/core';
 
+//The 8192 is the chunk size for converting Uint8Array to a string via String.fromCharCode.apply().
 function encodeUpdate(update: Uint8Array): string {
   const chunks: string[] = [];
   for (let i = 0; i < update.length; i += 8192) {
-    chunks.push(String.fromCharCode.apply(null, Array.from(update.subarray(i, i + 8192))));
+    chunks.push(String.fromCharCode.apply(null, update.subarray(i, i + 8192) as unknown as number[]));
   }
   return btoa(chunks.join(''));
 }
 
 function decodeUpdate(encoded: string): Uint8Array {
-  const binary = atob(encoded);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
+  return Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
 }
 
 export function getStoredUserName(): string | null {
@@ -26,32 +23,24 @@ export function setStoredUserName(name: string): void {
   localStorage.setItem('writeboard-username', name);
 }
 
-export function useDocPersistence(ydoc: Y.Doc, roomId: string): { cleanup: () => void } {
+export function useDocPersistence(ydoc: Y.Doc, roomId: string) {
   const docKey = `writeboard-doc-${roomId}`;
   const stored = localStorage.getItem(docKey);
   if (stored) {
     Y.applyUpdate(ydoc, decodeUpdate(stored));
   }
 
-  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-  ydoc.on('update', () => {
-    if (saveTimeout !== null) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => {
-      try {
-        const state = Y.encodeStateAsUpdate(ydoc);
-        const encoded = encodeUpdate(state);
-        localStorage.setItem(docKey, encoded);
-      } catch (e) {
-        console.warn('Failed to save to localStorage:', e);
-      }
-    }, config.docSaveDebounceMs);
-  });
+  const debounceUpdateFn = useDebounceFn(() => {
+    try {
+      const state = Y.encodeStateAsUpdate(ydoc);
+      const encoded = encodeUpdate(state);
+      localStorage.setItem(docKey, encoded);
+    } catch (e) {
+      console.warn('Failed to save to localStorage:', e);
+    }
+  }, config.docSaveDebounceMs);
 
-  return {
-    cleanup() {
-      if (saveTimeout !== null) clearTimeout(saveTimeout);
-    },
-  };
+  ydoc.on('update', () => debounceUpdateFn());
 }
 
 interface RecentRoom {
