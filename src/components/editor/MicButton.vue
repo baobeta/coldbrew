@@ -2,7 +2,8 @@
   <button
     class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-full bg-white font-ui text-sm cursor-pointer transition-all whitespace-nowrap hover:border-accent disabled:cursor-not-allowed"
     :class="{
-      'bg-accent border-accent text-white animate-[pulse-opacity_2s_ease-in-out_infinite]': isListening,
+      'bg-accent border-accent text-white animate-[pulse-opacity_2s_ease-in-out_infinite]':
+        isListening,
       'opacity-50 cursor-not-allowed': !!speakerName && !isListening,
     }"
     :disabled="!!speakerName && !isListening"

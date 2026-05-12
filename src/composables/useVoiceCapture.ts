@@ -20,8 +20,7 @@ export function useVoiceCapture(provider: any, getEditor: () => any) {
     recognition.interimResults = true
     recognition.lang = 'en-US'
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
+    recognition.addEventListener('result', (event: any) => {
       let interim = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript
@@ -40,26 +39,26 @@ export function useVoiceCapture(provider: any, getEditor: () => any) {
         }
       }
       if (interim) interimText.value = interim
-    }
+    })
 
-    recognition.onend = () => {
+    recognition.addEventListener('end', () => {
       if (isListening.value) {
         if (restartCount < MAX_RESTARTS) {
           restartCount++
           try {
             recognition.start()
-          } catch (e) {}
+          } catch {}
         } else {
           stopListening()
         }
       }
-    }
+    })
 
-    recognition.onerror = (event: any) => {
+    recognition.addEventListener('error', (event: any) => {
       if (event.error === 'not-allowed') {
         stopListening()
       }
-    }
+    })
   }
 
   function isSomeoneElseSpeaking(): boolean {
@@ -99,6 +98,7 @@ export function useVoiceCapture(provider: any, getEditor: () => any) {
     try {
       recognition.start()
     } catch (e) {
+      console.log('[DEBUG] startListening error', e)
       stopListening()
     }
   }
@@ -110,7 +110,9 @@ export function useVoiceCapture(provider: any, getEditor: () => any) {
     if (recognition) {
       try {
         recognition.stop()
-      } catch (e) {}
+      } catch (e) {
+        console.log('DEBUG stopListening error', e)
+      }
     }
   }
 

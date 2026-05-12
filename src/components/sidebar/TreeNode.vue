@@ -2,7 +2,10 @@
   <li :class="{ 'is-active': node.type === 'page' && node.id === activePageId }">
     <div
       class="flex items-center gap-0.5 px-2 py-[3px] cursor-pointer text-[0.82rem] text-text rounded mx-1 my-px transition-colors select-none h-[26px] hover:bg-black/5"
-      :class="{ 'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]': node.type === 'page' && node.id === activePageId }"
+      :class="{
+        'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]':
+          node.type === 'page' && node.id === activePageId,
+      }"
       :style="{ paddingLeft: depth * 16 + 8 + 'px' }"
       @click="handleClick"
       @dblclick="startRename"
@@ -86,10 +89,15 @@
           @keydown.escape="cancelRename"
         />
       </span>
-      <span v-else class="overflow-hidden text-ellipsis whitespace-nowrap flex-1 leading-tight">{{ node.title }}</span>
+      <span v-else class="overflow-hidden text-ellipsis whitespace-nowrap flex-1 leading-tight">{{
+        node.title
+      }}</span>
     </div>
 
-    <ul v-if="node.type === 'folder' && isExpanded && node.children?.length" class="list-none p-0 m-0">
+    <ul
+      v-if="node.type === 'folder' && isExpanded && node.children?.length"
+      class="list-none p-0 m-0"
+    >
       <TreeNode
         v-for="child in node.children"
         :key="child.id"
@@ -117,7 +125,13 @@
         class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
         @click="onContextAction('new-page')"
       >
-        <svg class="shrink-0 text-text-muted" width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <svg
+          class="shrink-0 text-text-muted"
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
           <path
             d="M4.5 1.5h5l3 3v9.5h-8z"
             stroke="currentColor"
@@ -140,7 +154,13 @@
         class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
         @click="onContextAction('new-folder')"
       >
-        <svg class="shrink-0 text-text-muted" width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <svg
+          class="shrink-0 text-text-muted"
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
           <path
             d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z"
             stroke="currentColor"
@@ -156,7 +176,13 @@
         class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
         @click="onContextAction('rename')"
       >
-        <svg class="shrink-0 text-text-muted" width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <svg
+          class="shrink-0 text-text-muted"
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
           <path
             d="M11.5 2.5l2 2-8 8H3.5v-2z"
             stroke="currentColor"
