@@ -7,6 +7,7 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 
 export default defineConfig({
+  base: '/coldbrew/',
   plugins: [
     vue(),
     tailwindcss(),
