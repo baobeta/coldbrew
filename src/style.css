@@ -61,14 +61,21 @@ body {
   margin-bottom: 0.4em;
 }
 
-.tiptap ul,
+.tiptap ul {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+  list-style-type: disc;
+}
+
 .tiptap ol {
   padding-left: 1.5em;
   margin-bottom: 0.75em;
+  list-style-type: decimal;
 }
 
 .tiptap li {
   margin-bottom: 0.25em;
+  display: list-item;
 }
 
 .tiptap p.is-editor-empty:first-child::before {
