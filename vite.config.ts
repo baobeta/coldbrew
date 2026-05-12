@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 
-export default defineConfig({
-  base: '/coldbrew/',
+export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/coldbrew/' : '/',
   plugins: [
     vue(),
     tailwindcss(),
@@ -28,4 +28,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-})
+}))
