@@ -28,6 +28,11 @@ export function useCollaboration(roomId: string): CollaborationReturn {
   const ydoc = new Y.Doc();
   const provider = new WebrtcProvider(`writeboard-${roomId}`, ydoc, {
     signaling: config.signalingServers,
+    peerOpts: {
+      config: {
+        iceServers: config.iceServers,
+      },
+    },
   });
 
   const userName = localStorage.getItem('writeboard-username');
