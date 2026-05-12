@@ -48,7 +48,7 @@ describe('useFileTree', () => {
   it('creates a page at root', () => {
     const id = fileTree.createPage('My Page');
     expect(id).toBeTruthy();
-    const page = fileTree.tree.value.find((n) => n.id === id);
+    const page = fileTree.tree.value.find((n) => n.id === id)!;
     expect(page).toBeTruthy();
     expect(page.title).toBe('My Page');
     expect(page.type).toBe('page');
@@ -56,7 +56,7 @@ describe('useFileTree', () => {
 
   it('creates a folder at root', () => {
     const id = fileTree.createFolder('My Folder');
-    const folder = fileTree.tree.value.find((n) => n.id === id);
+    const folder = fileTree.tree.value.find((n) => n.id === id)!;
     expect(folder).toBeTruthy();
     expect(folder.title).toBe('My Folder');
     expect(folder.type).toBe('folder');
@@ -66,16 +66,16 @@ describe('useFileTree', () => {
   it('creates a page inside a folder', () => {
     const folderId = fileTree.createFolder('Folder');
     const pageId = fileTree.createPage('Nested Page', folderId);
-    const folder = fileTree.tree.value.find((n) => n.id === folderId);
-    expect(folder.children.length).toBe(1);
-    expect(folder.children[0].id).toBe(pageId);
-    expect(folder.children[0].title).toBe('Nested Page');
+    const folder = fileTree.tree.value.find((n) => n.id === folderId)!;
+    expect(folder.children!.length).toBe(1);
+    expect(folder.children![0].id).toBe(pageId);
+    expect(folder.children![0].title).toBe('Nested Page');
   });
 
   it('renames a node', () => {
     const id = fileTree.createPage('Old Name');
     fileTree.rename(id, 'New Name');
-    const page = fileTree.tree.value.find((n) => n.id === id);
+    const page = fileTree.tree.value.find((n) => n.id === id)!;
     expect(page.title).toBe('New Name');
   });
 
@@ -99,9 +99,9 @@ describe('useFileTree', () => {
     const pageId = fileTree.createPage('Movable');
     const folderId = fileTree.createFolder('Target');
     fileTree.moveNode(pageId, folderId);
-    const folder = fileTree.tree.value.find((n) => n.id === folderId);
-    expect(folder.children.length).toBe(1);
-    expect(folder.children[0].id).toBe(pageId);
+    const folder = fileTree.tree.value.find((n) => n.id === folderId)!;
+    expect(folder.children!.length).toBe(1);
+    expect(folder.children![0].id).toBe(pageId);
     // Should no longer be at root
     expect(fileTree.tree.value.find((n) => n.id === pageId)).toBeUndefined();
   });
