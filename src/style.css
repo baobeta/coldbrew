@@ -19,21 +19,33 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Tiptap editor — cannot be Tailwind-ified (nested .tiptap selectors) */
-.editor-content .tiptap {
+/* Tiptap editor — nested selectors that can't use Tailwind */
+.tiptap {
   outline: none;
+  border: none;
   font-family: var(--font-body);
   font-size: 1.1rem;
   line-height: 1.7;
   color: var(--color-text);
   min-height: 60vh;
+  padding: 0;
 }
 
-.editor-content .tiptap p {
+.tiptap:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tiptap.ProseMirror-focused {
+  outline: none;
+  border: none;
+}
+
+.tiptap p {
   margin-bottom: 0.75em;
 }
 
-.editor-content .tiptap h2 {
+.tiptap h2 {
   font-family: var(--font-body);
   font-size: 1.6rem;
   font-weight: 600;
@@ -41,7 +53,7 @@ body {
   margin-bottom: 0.5em;
 }
 
-.editor-content .tiptap h3 {
+.tiptap h3 {
   font-family: var(--font-body);
   font-size: 1.25rem;
   font-weight: 600;
@@ -49,17 +61,17 @@ body {
   margin-bottom: 0.4em;
 }
 
-.editor-content .tiptap ul,
-.editor-content .tiptap ol {
+.tiptap ul,
+.tiptap ol {
   padding-left: 1.5em;
   margin-bottom: 0.75em;
 }
 
-.editor-content .tiptap li {
+.tiptap li {
   margin-bottom: 0.25em;
 }
 
-.editor-content .tiptap p.is-editor-empty:first-child::before {
+.tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: var(--color-text-light);
