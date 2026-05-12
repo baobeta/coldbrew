@@ -21,13 +21,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { icons } from '@/assets/icons'
+import { computed } from 'vue';
+import { icons } from '@/assets/icons';
 
 const props = defineProps({
   name: { type: String, required: true },
   size: { type: [Number, String], default: 16 },
-})
+});
 
-const paths = computed(() => icons[props.name] || [])
+const paths = computed(() => icons[props.name] || []);
 </script>

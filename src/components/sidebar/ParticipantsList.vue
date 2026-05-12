@@ -42,5 +42,5 @@
 <script setup>
 defineProps({
   participants: { type: Array, required: true },
-})
+});
 </script>

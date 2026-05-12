@@ -28,20 +28,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue';
 
-const emit = defineEmits(['submit'])
-const name = ref('')
-const inputRef = ref(null)
+const emit = defineEmits(['submit']);
+const name = ref('');
+const inputRef = ref(null);
 
 onMounted(() => {
-  inputRef.value?.focus()
-})
+  inputRef.value?.focus();
+});
 
 function submit() {
-  const trimmed = name.value.trim()
+  const trimmed = name.value.trim();
   if (trimmed) {
-    emit('submit', trimmed)
+    emit('submit', trimmed);
   }
 }
 </script>

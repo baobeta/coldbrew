@@ -10,5 +10,5 @@
 <script setup>
 defineProps({
   text: { type: String, default: '' },
-})
+});
 </script>

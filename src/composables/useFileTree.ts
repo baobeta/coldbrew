@@ -1,7 +1,7 @@
-import { ref, onUnmounted } from 'vue'
-import * as Y from 'yjs'
-import { nanoid } from 'nanoid'
-import type { TreeNode } from '@/types'
+import { ref, onUnmounted } from 'vue';
+import * as Y from 'yjs';
+import { nanoid } from 'nanoid';
+import type { TreeNode } from '@/types';
 
 /**
  * Approach C: Flat node map + ordered children arrays
@@ -16,228 +16,228 @@ import type { TreeNode } from '@/types'
  */
 
 export function useFileTree(ydoc: Y.Doc, provider: any) {
-  const tree = ref<TreeNode[]>([])
-  const activePageId = ref<string | null>(null)
-  const expandedFolders = ref<Set<string>>(new Set())
+  const tree = ref<TreeNode[]>([]);
+  const activePageId = ref<string | null>(null);
+  const expandedFolders = ref<Set<string>>(new Set());
 
-  const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes')
-  const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren')
+  const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes');
+  const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren');
 
   function getChildrenArray(folderId: string): Y.Array<string> {
-    return ydoc.getArray(`children:${folderId}`)
+    return ydoc.getArray(`children:${folderId}`);
   }
 
   function getParentArray(parentId: string | null): Y.Array<string> {
-    return parentId ? getChildrenArray(parentId) : rootChildren
+    return parentId ? getChildrenArray(parentId) : rootChildren;
   }
 
   function buildTreeNode(nodeId: string): TreeNode | null {
-    const nodeMap = nodesMap.get(nodeId)
-    if (!nodeMap) return null
+    const nodeMap = nodesMap.get(nodeId);
+    if (!nodeMap) return null;
 
     const node: TreeNode = {
       id: nodeMap.get('id') as string,
       type: nodeMap.get('type') as 'page' | 'folder',
       title: nodeMap.get('title') as string,
-    }
+    };
 
     if (node.type === 'folder') {
-      const childArr = getChildrenArray(nodeId)
-      node.children = childArr.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[]
+      const childArr = getChildrenArray(nodeId);
+      node.children = childArr.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[];
     }
 
-    return node
+    return node;
   }
 
   function syncTree(): void {
-    tree.value = rootChildren.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[]
+    tree.value = rootChildren.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[];
   }
 
   function createPage(title = 'Untitled', parentId: string | null = null): string {
-    const id = nanoid(8)
+    const id = nanoid(8);
 
     ydoc.transact(() => {
-      const nodeMap = new Y.Map()
-      nodeMap.set('id', id)
-      nodeMap.set('type', 'page')
-      nodeMap.set('title', title)
-      nodeMap.set('parentId', parentId)
-      nodesMap.set(id, nodeMap)
+      const nodeMap = new Y.Map();
+      nodeMap.set('id', id);
+      nodeMap.set('type', 'page');
+      nodeMap.set('title', title);
+      nodeMap.set('parentId', parentId);
+      nodesMap.set(id, nodeMap);
 
-      ydoc.getXmlFragment(`page-${id}`)
-      getParentArray(parentId).push([id])
-    })
+      ydoc.getXmlFragment(`page-${id}`);
+      getParentArray(parentId).push([id]);
+    });
 
-    activePageId.value = id
-    broadcastActivePage(id)
-    return id
+    activePageId.value = id;
+    broadcastActivePage(id);
+    return id;
   }
 
   function createFolder(title = 'New Folder', parentId: string | null = null): string {
-    const id = nanoid(8)
+    const id = nanoid(8);
 
     ydoc.transact(() => {
-      const nodeMap = new Y.Map()
-      nodeMap.set('id', id)
-      nodeMap.set('type', 'folder')
-      nodeMap.set('title', title)
-      nodeMap.set('parentId', parentId)
-      nodesMap.set(id, nodeMap)
+      const nodeMap = new Y.Map();
+      nodeMap.set('id', id);
+      nodeMap.set('type', 'folder');
+      nodeMap.set('title', title);
+      nodeMap.set('parentId', parentId);
+      nodesMap.set(id, nodeMap);
 
-      getParentArray(parentId).push([id])
-    })
+      getParentArray(parentId).push([id]);
+    });
 
-    expandedFolders.value = new Set([...expandedFolders.value, id])
-    return id
+    expandedFolders.value = new Set([...expandedFolders.value, id]);
+    return id;
   }
 
   function rename(id: string, newTitle: string): void {
-    const nodeMap = nodesMap.get(id)
-    if (nodeMap) nodeMap.set('title', newTitle)
+    const nodeMap = nodesMap.get(id);
+    if (nodeMap) nodeMap.set('title', newTitle);
   }
 
   function removeFromParent(nodeId: string): void {
-    const nodeMap = nodesMap.get(nodeId)
-    if (!nodeMap) return
-    const parentId = nodeMap.get('parentId') as string | null
-    const parentArr = getParentArray(parentId)
-    const arr = parentArr.toArray()
-    const idx = arr.indexOf(nodeId)
-    if (idx >= 0) parentArr.delete(idx, 1)
+    const nodeMap = nodesMap.get(nodeId);
+    if (!nodeMap) return;
+    const parentId = nodeMap.get('parentId') as string | null;
+    const parentArr = getParentArray(parentId);
+    const arr = parentArr.toArray();
+    const idx = arr.indexOf(nodeId);
+    if (idx >= 0) parentArr.delete(idx, 1);
   }
 
   function deleteNode(id: string): void {
-    const nodeMap = nodesMap.get(id)
-    if (!nodeMap) return
+    const nodeMap = nodesMap.get(id);
+    if (!nodeMap) return;
 
     ydoc.transact(() => {
       if (nodeMap.get('type') === 'folder') {
-        const childArr = getChildrenArray(id)
-        const childIds = childArr.toArray().slice()
+        const childArr = getChildrenArray(id);
+        const childIds = childArr.toArray().slice();
         for (const childId of childIds) {
-          deleteNode(childId)
+          deleteNode(childId);
         }
       }
 
-      removeFromParent(id)
-      nodesMap.delete(id)
-    })
+      removeFromParent(id);
+      nodesMap.delete(id);
+    });
 
     if (activePageId.value === id) {
-      const firstPage = findFirstPage()
-      activePageId.value = firstPage
-      broadcastActivePage(firstPage)
+      const firstPage = findFirstPage();
+      activePageId.value = firstPage;
+      broadcastActivePage(firstPage);
     }
   }
 
   function moveNode(nodeId: string, newParentId: string | null, index = -1): void {
-    const nodeMap = nodesMap.get(nodeId)
-    if (!nodeMap) return
-    if (newParentId === nodeId) return
-    if (newParentId && isDescendant(newParentId, nodeId)) return
+    const nodeMap = nodesMap.get(nodeId);
+    if (!nodeMap) return;
+    if (newParentId === nodeId) return;
+    if (newParentId && isDescendant(newParentId, nodeId)) return;
 
     ydoc.transact(() => {
-      removeFromParent(nodeId)
-      nodeMap.set('parentId', newParentId)
+      removeFromParent(nodeId);
+      nodeMap.set('parentId', newParentId);
 
-      const targetArr = getParentArray(newParentId)
-      const insertAt = index >= 0 ? Math.min(index, targetArr.length) : targetArr.length
-      targetArr.insert(insertAt, [nodeId])
-    })
+      const targetArr = getParentArray(newParentId);
+      const insertAt = index >= 0 ? Math.min(index, targetArr.length) : targetArr.length;
+      targetArr.insert(insertAt, [nodeId]);
+    });
   }
 
   function isDescendant(candidateId: string, ancestorId: string): boolean {
-    const childArr = getChildrenArray(ancestorId)
+    const childArr = getChildrenArray(ancestorId);
     for (const childId of childArr.toArray()) {
-      if (childId === candidateId) return true
-      const childNode = nodesMap.get(childId)
+      if (childId === candidateId) return true;
+      const childNode = nodesMap.get(childId);
       if (childNode?.get('type') === 'folder' && isDescendant(candidateId, childId)) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   }
 
   function findFirstPage(): string | null {
     function search(arr: Y.Array<string>): string | null {
       for (const id of arr.toArray()) {
-        const nodeMap = nodesMap.get(id)
-        if (!nodeMap) continue
-        if (nodeMap.get('type') === 'page') return id
+        const nodeMap = nodesMap.get(id);
+        if (!nodeMap) continue;
+        if (nodeMap.get('type') === 'page') return id;
         if (nodeMap.get('type') === 'folder') {
-          const found = search(getChildrenArray(id))
-          if (found) return found
+          const found = search(getChildrenArray(id));
+          if (found) return found;
         }
       }
-      return null
+      return null;
     }
-    return search(rootChildren)
+    return search(rootChildren);
   }
 
   function setActivePage(id: string): void {
-    activePageId.value = id
-    broadcastActivePage(id)
+    activePageId.value = id;
+    broadcastActivePage(id);
   }
 
   function toggleFolder(id: string): void {
-    const s = new Set(expandedFolders.value)
-    if (s.has(id)) s.delete(id)
-    else s.add(id)
-    expandedFolders.value = s
+    const s = new Set(expandedFolders.value);
+    if (s.has(id)) s.delete(id);
+    else s.add(id);
+    expandedFolders.value = s;
   }
 
   function getFragment(id: string): Y.XmlFragment {
-    return ydoc.getXmlFragment(`page-${id}`)
+    return ydoc.getXmlFragment(`page-${id}`);
   }
 
   function broadcastActivePage(id: string | null): void {
-    provider.awareness.setLocalStateField('activePage', id)
+    provider.awareness.setLocalStateField('activePage', id);
   }
 
   // Observe changes — use deep observer on nodesMap + observer on rootChildren
-  const syncHandler = () => syncTree()
-  nodesMap.observeDeep(syncHandler)
-  rootChildren.observe(syncHandler)
+  const syncHandler = () => syncTree();
+  nodesMap.observeDeep(syncHandler);
+  rootChildren.observe(syncHandler);
 
   // Also observe all folder children arrays
-  const folderObservers = new Map<string, Y.Array<string>>()
+  const folderObservers = new Map<string, Y.Array<string>>();
 
   function observeFolderChildren(): void {
     for (const [id, nodeMap] of nodesMap) {
       if (nodeMap.get('type') === 'folder' && !folderObservers.has(id)) {
-        const childArr = getChildrenArray(id)
-        childArr.observe(syncHandler)
-        folderObservers.set(id, childArr)
+        const childArr = getChildrenArray(id);
+        childArr.observe(syncHandler);
+        folderObservers.set(id, childArr);
       }
     }
   }
 
   nodesMap.observe(() => {
-    observeFolderChildren()
-    syncTree()
-  })
+    observeFolderChildren();
+    syncTree();
+  });
 
   // Initialize
-  syncTree()
-  observeFolderChildren()
+  syncTree();
+  observeFolderChildren();
 
   if (tree.value.length === 0) {
-    createPage('Untitled')
+    createPage('Untitled');
   } else if (!activePageId.value) {
-    const firstPage = findFirstPage()
+    const firstPage = findFirstPage();
     if (firstPage) {
-      activePageId.value = firstPage
-      broadcastActivePage(firstPage)
+      activePageId.value = firstPage;
+      broadcastActivePage(firstPage);
     }
   }
 
   onUnmounted(() => {
-    nodesMap.unobserveDeep(syncHandler)
-    rootChildren.unobserve(syncHandler)
+    nodesMap.unobserveDeep(syncHandler);
+    rootChildren.unobserve(syncHandler);
     for (const [, childArr] of folderObservers) {
-      childArr.unobserve(syncHandler)
+      childArr.unobserve(syncHandler);
     }
-  })
+  });
 
   return {
     tree,
@@ -251,5 +251,5 @@ export function useFileTree(ydoc: Y.Doc, provider: any) {
     setActivePage,
     toggleFolder,
     getFragment,
-  }
+  };
 }

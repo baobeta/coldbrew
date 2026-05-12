@@ -1,8 +1,8 @@
 interface Config {
-  appName: string
-  signalingServers: string[]
-  maxRecentRooms: number
-  docSaveDebounceMs: number
+  appName: string;
+  signalingServers: string[];
+  maxRecentRooms: number;
+  docSaveDebounceMs: number;
 }
 
 export const config: Config = {
@@ -12,4 +12,4 @@ export const config: Config = {
   ),
   maxRecentRooms: Number(import.meta.env.VITE_MAX_RECENT_ROOMS) || 20,
   docSaveDebounceMs: Number(import.meta.env.VITE_DOC_SAVE_DEBOUNCE_MS) || 500,
-}
+};

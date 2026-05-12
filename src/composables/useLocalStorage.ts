@@ -1,70 +1,70 @@
-import * as Y from 'yjs'
-import { config } from '@/config'
+import * as Y from 'yjs';
+import { config } from '@/config';
 
 function encodeUpdate(update: Uint8Array): string {
-  const chunks: string[] = []
+  const chunks: string[] = [];
   for (let i = 0; i < update.length; i += 8192) {
-    chunks.push(String.fromCharCode.apply(null, Array.from(update.subarray(i, i + 8192))))
+    chunks.push(String.fromCharCode.apply(null, Array.from(update.subarray(i, i + 8192))));
   }
-  return btoa(chunks.join(''))
+  return btoa(chunks.join(''));
 }
 
 function decodeUpdate(encoded: string): Uint8Array {
-  const binary = atob(encoded)
-  const bytes = new Uint8Array(binary.length)
+  const binary = atob(encoded);
+  const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i)
+    bytes[i] = binary.charCodeAt(i);
   }
-  return bytes
+  return bytes;
 }
 
 export function getStoredUserName(): string | null {
-  return localStorage.getItem('writeboard-username')
+  return localStorage.getItem('writeboard-username');
 }
 
 export function setStoredUserName(name: string): void {
-  localStorage.setItem('writeboard-username', name)
+  localStorage.setItem('writeboard-username', name);
 }
 
 export function useDocPersistence(ydoc: Y.Doc, roomId: string): { cleanup: () => void } {
-  const docKey = `writeboard-doc-${roomId}`
-  const stored = localStorage.getItem(docKey)
+  const docKey = `writeboard-doc-${roomId}`;
+  const stored = localStorage.getItem(docKey);
   if (stored) {
-    Y.applyUpdate(ydoc, decodeUpdate(stored))
+    Y.applyUpdate(ydoc, decodeUpdate(stored));
   }
 
-  let saveTimeout: ReturnType<typeof setTimeout> | null = null
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
   ydoc.on('update', () => {
-    if (saveTimeout !== null) clearTimeout(saveTimeout)
+    if (saveTimeout !== null) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
       try {
-        const state = Y.encodeStateAsUpdate(ydoc)
-        const encoded = encodeUpdate(state)
-        localStorage.setItem(docKey, encoded)
+        const state = Y.encodeStateAsUpdate(ydoc);
+        const encoded = encodeUpdate(state);
+        localStorage.setItem(docKey, encoded);
       } catch (e) {
-        console.warn('Failed to save to localStorage:', e)
+        console.warn('Failed to save to localStorage:', e);
       }
-    }, config.docSaveDebounceMs)
-  })
+    }, config.docSaveDebounceMs);
+  });
 
   return {
     cleanup() {
-      if (saveTimeout !== null) clearTimeout(saveTimeout)
+      if (saveTimeout !== null) clearTimeout(saveTimeout);
     },
-  }
+  };
 }
 
 interface RecentRoom {
-  id: string
-  lastVisited: number
+  id: string;
+  lastVisited: number;
 }
 
 export function trackRecentRoom(roomId: string): void {
-  const roomsKey = 'writeboard-rooms'
-  const rooms: RecentRoom[] = JSON.parse(localStorage.getItem(roomsKey) || '[]')
-  const existing = rooms.findIndex((r) => r.id === roomId)
-  if (existing >= 0) rooms.splice(existing, 1)
-  rooms.unshift({ id: roomId, lastVisited: Date.now() })
-  if (rooms.length > config.maxRecentRooms) rooms.length = config.maxRecentRooms
-  localStorage.setItem(roomsKey, JSON.stringify(rooms))
+  const roomsKey = 'writeboard-rooms';
+  const rooms: RecentRoom[] = JSON.parse(localStorage.getItem(roomsKey) || '[]');
+  const existing = rooms.findIndex((r) => r.id === roomId);
+  if (existing >= 0) rooms.splice(existing, 1);
+  rooms.unshift({ id: roomId, lastVisited: Date.now() });
+  if (rooms.length > config.maxRecentRooms) rooms.length = config.maxRecentRooms;
+  localStorage.setItem(roomsKey, JSON.stringify(rooms));
 }

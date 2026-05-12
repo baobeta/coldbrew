@@ -1,10 +1,10 @@
 interface IconPath {
-  d: string
-  stroke?: string
-  strokeWidth?: string
-  fill?: string
-  strokeLinecap?: string
-  strokeLinejoin?: string
+  d: string;
+  stroke?: string;
+  strokeWidth?: string;
+  fill?: string;
+  strokeLinecap?: string;
+  strokeLinejoin?: string;
 }
 
 export const icons: Record<string, IconPath[]> = {
@@ -38,4 +38,4 @@ export const icons: Record<string, IconPath[]> = {
   ],
   pencil: [{ d: 'M11.5 2.5l2 2-8 8H3.5v-2z' }],
   trash: [{ d: 'M3 4.5h10M5.5 4.5V3.5h5v1M5.5 4.5v8h5v-8' }],
-}
+};

@@ -21,13 +21,13 @@
 </template>
 
 <script setup>
-import TreeNode from './TreeNode.vue'
+import TreeNode from './TreeNode.vue';
 
 defineProps({
   tree: { type: Array, required: true },
   activePageId: { type: String, default: null },
   expandedFolders: { type: Set, default: () => new Set() },
-})
+});
 
-defineEmits(['select-page', 'toggle-folder', 'rename', 'delete', 'create-page', 'create-folder'])
+defineEmits(['select-page', 'toggle-folder', 'rename', 'delete', 'create-page', 'create-folder']);
 </script>

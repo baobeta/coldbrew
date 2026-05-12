@@ -25,27 +25,27 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 const props = defineProps({
   isListening: { type: Boolean, default: false },
   isSupported: { type: Boolean, default: false },
   speakerName: { type: String, default: null },
-})
-const emit = defineEmits(['toggle'])
+});
+const emit = defineEmits(['toggle']);
 
 const buttonTitle = computed(() => {
-  if (!props.isSupported) return 'Voice not supported in this browser. Use Chrome or Edge.'
-  if (props.isListening) return 'Stop dictation'
-  if (props.speakerName) return `${props.speakerName} is speaking`
-  return 'Start dictation'
-})
+  if (!props.isSupported) return 'Voice not supported in this browser. Use Chrome or Edge.';
+  if (props.isListening) return 'Stop dictation';
+  if (props.speakerName) return `${props.speakerName} is speaking`;
+  return 'Start dictation';
+});
 
 function handleClick() {
   if (!props.isSupported) {
-    alert('Speech-to-text requires Chrome or Edge browser.')
-    return
+    alert('Speech-to-text requires Chrome or Edge browser.');
+    return;
   }
-  emit('toggle')
+  emit('toggle');
 }
 </script>

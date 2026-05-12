@@ -70,5 +70,5 @@
 <script setup>
 defineProps({
   editor: { type: Object, default: null },
-})
+});
 </script>

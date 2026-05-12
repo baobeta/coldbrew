@@ -5,12 +5,12 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount } from 'vue'
-import { useEditor, EditorContent } from '@tiptap/vue-3'
-import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
-import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@/extensions/collaborationCursor'
+import { onBeforeUnmount } from 'vue';
+import { useEditor, EditorContent } from '@tiptap/vue-3';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import Collaboration from '@tiptap/extension-collaboration';
+import CollaborationCursor from '@/extensions/collaborationCursor';
 
 const props = defineProps({
   ydoc: { type: Object, default: null },
@@ -18,7 +18,7 @@ const props = defineProps({
   fragment: { type: Object, default: null },
   userName: { type: String, default: null },
   userColor: { type: String, default: null },
-})
+});
 
 const extensions = [
   StarterKit.configure({
@@ -28,7 +28,7 @@ const extensions = [
   Placeholder.configure({
     placeholder: 'Start typing or tap the mic to dictate...',
   }),
-]
+];
 
 if (props.ydoc && props.provider && props.fragment) {
   extensions.push(
@@ -40,22 +40,22 @@ if (props.ydoc && props.provider && props.fragment) {
         color: props.userColor,
       },
     }),
-  )
+  );
 }
 
-const emit = defineEmits(['editor-ready'])
+const emit = defineEmits(['editor-ready']);
 
 const editor = useEditor({
   extensions,
   autofocus: true,
   onCreate({ editor: editorInstance }) {
-    emit('editor-ready', editorInstance)
+    emit('editor-ready', editorInstance);
   },
-})
+});
 
 onBeforeUnmount(() => {
-  editor.value?.destroy()
-})
+  editor.value?.destroy();
+});
 
-defineExpose({ editor })
+defineExpose({ editor });
 </script>

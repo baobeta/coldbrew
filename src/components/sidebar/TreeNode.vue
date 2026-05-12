@@ -213,14 +213,14 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   node: { type: Object, required: true },
   depth: { type: Number, default: 0 },
   activePageId: { type: String, default: null },
   expandedFolders: { type: Set, default: () => new Set() },
-})
+});
 
 const emit = defineEmits([
   'select-page',
@@ -229,74 +229,74 @@ const emit = defineEmits([
   'delete',
   'create-page',
   'create-folder',
-])
+]);
 
-const isExpanded = computed(() => props.expandedFolders.has(props.node.id))
+const isExpanded = computed(() => props.expandedFolders.has(props.node.id));
 
-const isRenaming = ref(false)
-const renameValue = ref('')
-const renameInput = ref(null)
+const isRenaming = ref(false);
+const renameValue = ref('');
+const renameInput = ref(null);
 
-const contextMenu = ref(false)
-const contextMenuStyle = ref({})
+const contextMenu = ref(false);
+const contextMenuStyle = ref({});
 
 function handleClick() {
   if (props.node.type === 'page') {
-    emit('select-page', props.node.id)
+    emit('select-page', props.node.id);
   } else {
-    emit('toggle-folder', props.node.id)
+    emit('toggle-folder', props.node.id);
   }
 }
 
 function startRename() {
-  isRenaming.value = true
-  renameValue.value = props.node.title
+  isRenaming.value = true;
+  renameValue.value = props.node.title;
   nextTick(() => {
-    renameInput.value?.focus()
-    renameInput.value?.select()
-  })
+    renameInput.value?.focus();
+    renameInput.value?.select();
+  });
 }
 
 function finishRename() {
-  if (!isRenaming.value) return
-  const trimmed = renameValue.value.trim()
+  if (!isRenaming.value) return;
+  const trimmed = renameValue.value.trim();
   if (trimmed && trimmed !== props.node.title) {
-    emit('rename', { id: props.node.id, title: trimmed })
+    emit('rename', { id: props.node.id, title: trimmed });
   }
-  isRenaming.value = false
+  isRenaming.value = false;
 }
 
 function cancelRename() {
-  isRenaming.value = false
+  isRenaming.value = false;
 }
 
 function showContextMenu(e) {
-  contextMenu.value = true
+  contextMenu.value = true;
   contextMenuStyle.value = {
     top: e.clientY + 'px',
     left: e.clientX + 'px',
-  }
+  };
 }
 
 function hideContextMenu() {
-  contextMenu.value = false
+  contextMenu.value = false;
 }
 
 function onContextAction(action) {
-  contextMenu.value = false
-  if (action === 'rename') startRename()
-  else if (action === 'delete') emit('delete', props.node.id)
-  else if (action === 'new-page') emit('create-page', props.node.id)
-  else if (action === 'new-folder') emit('create-folder', props.node.id)
+  contextMenu.value = false;
+  if (action === 'rename') startRename();
+  else if (action === 'delete') emit('delete', props.node.id);
+  else if (action === 'new-page') emit('create-page', props.node.id);
+  else if (action === 'new-folder') emit('create-folder', props.node.id);
 }
 
 onMounted(() => {
-  document.addEventListener('click', hideContextMenu)
-})
+  document.addEventListener('click', hideContextMenu);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('click', hideContextMenu)
-})
+  document.removeEventListener('click', hideContextMenu);
+});
 </script>
 
 <style scoped>

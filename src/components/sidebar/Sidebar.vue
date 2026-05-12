@@ -78,8 +78,8 @@
 </template>
 
 <script setup>
-import FileTree from './FileTree.vue'
-import ParticipantsList from './ParticipantsList.vue'
+import FileTree from './FileTree.vue';
+import ParticipantsList from './ParticipantsList.vue';
 
 defineProps({
   isOpen: { type: Boolean, default: true },
@@ -87,7 +87,7 @@ defineProps({
   activePageId: { type: String, default: null },
   expandedFolders: { type: Set, default: () => new Set() },
   participants: { type: Array, default: () => [] },
-})
+});
 
-defineEmits(['create-page', 'create-folder', 'select-page', 'toggle-folder', 'rename', 'delete'])
+defineEmits(['create-page', 'create-folder', 'select-page', 'toggle-folder', 'rename', 'delete']);
 </script>

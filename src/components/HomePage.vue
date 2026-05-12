@@ -32,17 +32,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { nanoid } from 'nanoid'
+import { ref } from 'vue';
+import { nanoid } from 'nanoid';
 
-const recentRooms = ref(JSON.parse(localStorage.getItem('writeboard-rooms') || '[]'))
+const recentRooms = ref(JSON.parse(localStorage.getItem('writeboard-rooms') || '[]'));
 
 function createRoom() {
-  const id = nanoid(6)
-  window.location.hash = 'room=' + id
+  const id = nanoid(6);
+  window.location.hash = 'room=' + id;
 }
 
 function formatDate(ts) {
-  return new Date(ts).toLocaleDateString()
+  return new Date(ts).toLocaleDateString();
 }
 </script>
