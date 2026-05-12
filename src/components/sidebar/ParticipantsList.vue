@@ -7,7 +7,7 @@
         :key="user.clientId"
         class="flex items-center gap-2 px-1 py-1 text-[0.82rem] rounded"
       >
-        <span class="relative w-[18px] h-[18px] flex items-center justify-center shrink-0">
+        <span class="relative w-4.5 h-4.5 flex items-center justify-center shrink-0">
           <span class="w-2 h-2 rounded-full" :style="{ background: user.color }"></span>
           <span
             class="absolute inset-0 rounded-full border-[1.5px] opacity-30"
