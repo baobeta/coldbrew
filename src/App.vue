@@ -31,5 +31,6 @@ function parseHash() {
   roomId.value = match ? match[1] : null;
 }
 
-useEventListener('hashchange', () => parseHash);
+parseHash();
+useEventListener('hashchange', parseHash);
 </script>
