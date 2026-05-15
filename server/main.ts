@@ -27,6 +27,7 @@ const MESSAGE_SYNC = 0;
 const MESSAGE_AWARENESS = 1;
 
 const PING_TIMEOUT = 30_000;
+const CROSS_ISOLATE_ORIGIN = "cross-isolate";
 
 interface Room {
   doc: Y.Doc;
@@ -35,6 +36,25 @@ interface Room {
 }
 
 const rooms = new Map<string, Room>();
+
+const channel = new BroadcastChannel("yjs-sync");
+
+channel.onmessage = (event: MessageEvent) => {
+  const { roomName, type, data } = event.data as {
+    roomName: string;
+    type: "sync" | "awareness";
+    data: number[];
+  };
+  const room = rooms.get(roomName);
+  if (!room) return;
+
+  const update = new Uint8Array(data);
+  if (type === "sync") {
+    Y.applyUpdate(room.doc, update, CROSS_ISOLATE_ORIGIN);
+  } else {
+    applyAwarenessUpdate(room.awareness, update, CROSS_ISOLATE_ORIGIN);
+  }
+};
 
 function getOrCreateRoom(name: string): Room {
   let room = rooms.get(name);
@@ -47,10 +67,19 @@ function getOrCreateRoom(name: string): Room {
     "update",
     (
       { added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
-      _origin: unknown,
+      origin: unknown,
     ) => {
       const changedClients = [...added, ...updated, ...removed];
       const update = encodeAwarenessUpdate(awareness, changedClients);
+
+      if (origin !== CROSS_ISOLATE_ORIGIN) {
+        channel.postMessage({
+          roomName: name,
+          type: "awareness",
+          data: Array.from(update),
+        });
+      }
+
       const encoder = encoding.createEncoder();
       encoding.writeVarUint(encoder, MESSAGE_AWARENESS);
       encoding.writeVarUint8Array(encoder, update);
@@ -60,6 +89,14 @@ function getOrCreateRoom(name: string): Room {
   );
 
   doc.on("update", (update: Uint8Array, origin: unknown) => {
+    if (origin !== CROSS_ISOLATE_ORIGIN) {
+      channel.postMessage({
+        roomName: name,
+        type: "sync",
+        data: Array.from(update),
+      });
+    }
+
     const encoder = encoding.createEncoder();
     encoding.writeVarUint(encoder, MESSAGE_SYNC);
     writeUpdate(encoder, update);
