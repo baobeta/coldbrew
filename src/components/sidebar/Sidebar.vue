@@ -4,7 +4,12 @@
     :class="{ '-translate-x-60 absolute opacity-0 pointer-events-none': !isOpen }"
   >
     <div class="px-4 py-3 border-b border-border">
-      <span class="font-body text-base font-semibold text-text tracking-tight">Writeboard</span>
+      <a
+        href="#"
+        class="font-body text-base font-semibold text-text tracking-tight no-underline hover:text-accent transition-colors"
+        title="Back to rooms"
+        >Writeboard</a
+      >
     </div>
     <ParticipantsList :participants="participants" />
     <div class="flex flex-col flex-1 min-h-0">
