@@ -1,6 +1,6 @@
 # Writeboard Sync Server
 
-A y-websocket server for Deno Deploy. Maintains Yjs documents in memory and syncs them to all connected clients over WebSocket.
+A y-websocket server for Deno Deploy. Syncs Yjs documents across clients over WebSocket, with Deno KV for persistence and BroadcastChannel for cross-isolate relay.
 
 ## Deploy to Deno Deploy (Free)
 
