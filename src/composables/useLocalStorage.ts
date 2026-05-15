@@ -6,7 +6,9 @@ import { useDebounceFn } from '@vueuse/core';
 function encodeUpdate(update: Uint8Array): string {
   const chunks: string[] = [];
   for (let i = 0; i < update.length; i += 8192) {
-    chunks.push(String.fromCharCode.apply(null, update.subarray(i, i + 8192) as unknown as number[]));
+    chunks.push(
+      String.fromCharCode.apply(null, update.subarray(i, i + 8192) as unknown as number[]),
+    );
   }
   return btoa(chunks.join(''));
 }

@@ -26,11 +26,7 @@ function randomColor(): string {
 
 export function useCollaboration(roomId: string): CollaborationReturn {
   const ydoc = new Y.Doc();
-  const provider = new WebsocketProvider(
-    config.websocketServer,
-    `writeboard-${roomId}`,
-    ydoc,
-  );
+  const provider = new WebsocketProvider(config.websocketServer, `writeboard-${roomId}`, ydoc);
 
   const userName = localStorage.getItem('writeboard-username');
   const userColor = randomColor();
