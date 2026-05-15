@@ -15,6 +15,9 @@ function createMockProvider() {
       },
       on() {},
     },
+    on(_event: string, cb: (data: any) => void) {
+      cb(true);
+    },
   };
 }
 

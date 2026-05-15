@@ -1,9 +1,14 @@
 /**
  * y-websocket server for Deno Deploy.
  *
- * Uses BroadcastChannel for real-time cross-isolate relay
- * and Deno KV for persistent document state so every isolate
- * can bootstrap a room from the same source of truth.
+ * Each isolate keeps rooms in memory. BroadcastChannel relays
+ * updates across isolates. When a new isolate creates a room,
+ * it requests the full doc state from other isolates via
+ * a state-request/response handshake over BroadcastChannel.
+ *
+ * Clients persist to localStorage and send their state on
+ * connect via the standard Yjs sync protocol, so no server-side
+ * persistence is needed.
  */
 
 import * as Y from "npm:yjs@^13.6.30";
@@ -26,18 +31,15 @@ const MESSAGE_SYNC = 0;
 const MESSAGE_AWARENESS = 1;
 
 const PING_TIMEOUT = 30_000;
-const KV_SAVE_DEBOUNCE_MS = 1_000;
 const CROSS_ISOLATE = "cross-isolate";
 
 interface Room {
   doc: Y.Doc;
   awareness: Awareness;
   conns: Map<WebSocket, Set<number>>;
-  saveTimer: number | null;
 }
 
 const rooms = new Map<string, Room>();
-const kv = await Deno.openKv();
 
 // --- Cross-isolate relay via BroadcastChannel ---
 
@@ -46,9 +48,30 @@ const channel = new BroadcastChannel("yjs-sync");
 channel.onmessage = (event: MessageEvent) => {
   const msg = event.data as {
     roomName: string;
-    type: "sync" | "awareness";
+    type: "sync" | "awareness" | "state-request" | "state-response";
     data: number[];
   };
+
+  if (msg.type === "state-request") {
+    const room = rooms.get(msg.roomName);
+    if (room && room.conns.size > 0) {
+      channel.postMessage({
+        roomName: msg.roomName,
+        type: "state-response",
+        data: Array.from(Y.encodeStateAsUpdate(room.doc)),
+      });
+    }
+    return;
+  }
+
+  if (msg.type === "state-response") {
+    const room = rooms.get(msg.roomName);
+    if (room) {
+      Y.applyUpdate(room.doc, new Uint8Array(msg.data), CROSS_ISOLATE);
+      broadcastToRoom(room, buildSyncStep2(room.doc), null);
+    }
+    return;
+  }
 
   const room = rooms.get(msg.roomName);
   if (!room) return;
@@ -61,38 +84,22 @@ channel.onmessage = (event: MessageEvent) => {
   }
 };
 
-// --- Deno KV persistence ---
-
-async function loadFromKv(roomName: string, doc: Y.Doc): Promise<void> {
-  const entry = await kv.get<Uint8Array>(["rooms", roomName]);
-  if (entry.value) {
-    Y.applyUpdate(doc, entry.value, "kv");
-  }
-}
-
-function scheduleSaveToKv(roomName: string, room: Room): void {
-  if (room.saveTimer !== null) clearTimeout(room.saveTimer);
-  room.saveTimer = setTimeout(async () => {
-    room.saveTimer = null;
-    try {
-      const state = Y.encodeStateAsUpdate(room.doc);
-      await kv.set(["rooms", roomName], state);
-    } catch {
-      // KV write failed — will retry on next update
-    }
-  }, KV_SAVE_DEBOUNCE_MS) as unknown as number;
+function buildSyncStep2(doc: Y.Doc): Uint8Array {
+  const encoder = encoding.createEncoder();
+  encoding.writeVarUint(encoder, MESSAGE_SYNC);
+  writeSyncStep2(encoder, doc);
+  return encoding.toUint8Array(encoder);
 }
 
 // --- Room management ---
 
-async function getOrCreateRoom(name: string): Promise<Room> {
-  let room = rooms.get(name);
-  if (room) return room;
+function getOrCreateRoom(name: string): Room {
+  const existing = rooms.get(name);
+  if (existing) return existing;
 
   const doc = new Y.Doc();
   const awareness = new Awareness(doc);
-
-  await loadFromKv(name, doc);
+  const room: Room = { doc, awareness, conns: new Map() };
 
   awareness.on(
     "update",
@@ -114,13 +121,12 @@ async function getOrCreateRoom(name: string): Promise<Room> {
       const encoder = encoding.createEncoder();
       encoding.writeVarUint(encoder, MESSAGE_AWARENESS);
       encoding.writeVarUint8Array(encoder, update);
-      const msg = encoding.toUint8Array(encoder);
-      broadcastToRoom(room!, msg, null);
+      broadcastToRoom(room, encoding.toUint8Array(encoder), null);
     },
   );
 
   doc.on("update", (update: Uint8Array, origin: unknown) => {
-    if (origin !== CROSS_ISOLATE && origin !== "kv") {
+    if (origin !== CROSS_ISOLATE) {
       channel.postMessage({
         roomName: name,
         type: "sync",
@@ -128,19 +134,16 @@ async function getOrCreateRoom(name: string): Promise<Room> {
       });
     }
 
-    if (origin !== "kv") {
-      scheduleSaveToKv(name, room!);
-    }
-
     const encoder = encoding.createEncoder();
     encoding.writeVarUint(encoder, MESSAGE_SYNC);
     writeUpdate(encoder, update);
-    const msg = encoding.toUint8Array(encoder);
-    broadcastToRoom(room!, msg, origin);
+    broadcastToRoom(room, encoding.toUint8Array(encoder), origin);
   });
 
-  room = { doc, awareness, conns: new Map(), saveTimer: null };
   rooms.set(name, room);
+
+  channel.postMessage({ roomName: name, type: "state-request", data: [] });
+
   return room;
 }
 
@@ -167,11 +170,6 @@ function closeConn(room: Room, conn: WebSocket): void {
   if (room.conns.size === 0) {
     const roomName = [...rooms.entries()].find(([, r]) => r === room)?.[0];
     if (roomName) {
-      if (room.saveTimer !== null) {
-        clearTimeout(room.saveTimer);
-        const state = Y.encodeStateAsUpdate(room.doc);
-        kv.set(["rooms", roomName], state).catch(() => {});
-      }
       room.awareness.destroy();
       room.doc.destroy();
       rooms.delete(roomName);
@@ -216,9 +214,10 @@ function handleMessage(room: Room, conn: WebSocket, data: Uint8Array): void {
   }
 }
 
-async function onConnection(conn: WebSocket, roomName: string): Promise<void> {
-  const room = await getOrCreateRoom(roomName);
+function onConnection(conn: WebSocket, roomName: string): void {
+  const room = getOrCreateRoom(roomName);
   room.conns.set(conn, new Set());
+  console.log(`[ws] join ${roomName} (${room.conns.size} conns, doc ${room.doc.store.clients.size > 0 ? "has data" : "empty"})`);
 
   let alive = true;
   const pingInterval = setInterval(() => {
@@ -234,6 +233,7 @@ async function onConnection(conn: WebSocket, roomName: string): Promise<void> {
   conn.addEventListener("close", () => {
     clearInterval(pingInterval);
     closeConn(room, conn);
+    console.log(`[ws] leave ${roomName} (${room.conns.size} conns)`);
   });
 
   conn.addEventListener("message", (event: MessageEvent) => {
@@ -281,7 +281,11 @@ Deno.serve({ port: Number(Deno.env.get("PORT")) || 4444 }, (req) => {
   const url = new URL(req.url);
 
   if (url.pathname === "/health") {
-    return new Response("ok", { status: 200 });
+    return Response.json({
+      status: "ok",
+      version: "2.0.0-bc",
+      rooms: rooms.size,
+    });
   }
 
   if (req.headers.get("upgrade")?.toLowerCase() === "websocket") {

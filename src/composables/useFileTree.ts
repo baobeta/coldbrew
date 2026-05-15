@@ -15,7 +15,10 @@ import type { TreeNode } from '@/types';
  * This avoids nesting Y.Array inside Y.Map (which prevents moves).
  */
 
-export function useFileTree(ydoc: Y.Doc, provider: any) {
+export function useFileTree(
+  ydoc: Y.Doc,
+  provider: { awareness: any; on: (event: string, cb: (data: any) => void) => void },
+) {
   const tree = ref<TreeNode[]>([]);
   const activePageId = ref<string | null>(null);
   const expandedFolders = ref<Set<string>>(new Set());
@@ -221,15 +224,22 @@ export function useFileTree(ydoc: Y.Doc, provider: any) {
   syncTree();
   observeFolderChildren();
 
-  if (tree.value.length === 0) {
-    createPage('Untitled');
-  } else if (!activePageId.value) {
-    const firstPage = findFirstPage();
-    if (firstPage) {
-      activePageId.value = firstPage;
-      broadcastActivePage(firstPage);
+  function initDefaultPage(): void {
+    if (tree.value.length === 0) {
+      createPage('Untitled');
+    } else if (!activePageId.value) {
+      const firstPage = findFirstPage();
+      if (firstPage) {
+        activePageId.value = firstPage;
+        broadcastActivePage(firstPage);
+      }
     }
   }
+
+  provider.on('sync', (synced: boolean) => {
+    if (synced) initDefaultPage();
+  });
+  initDefaultPage();
 
   onUnmounted(() => {
     nodesMap.unobserveDeep(syncHandler);

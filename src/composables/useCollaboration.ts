@@ -26,6 +26,9 @@ function randomColor(): string {
 
 export function useCollaboration(roomId: string): CollaborationReturn {
   const ydoc = new Y.Doc();
+
+  useDocPersistence(ydoc, roomId);
+
   const provider = new WebsocketProvider(config.websocketServer, `writeboard-${roomId}`, ydoc);
 
   const userName = localStorage.getItem('writeboard-username');
@@ -66,7 +69,6 @@ export function useCollaboration(roomId: string): CollaborationReturn {
     connectionStatus.value = event.status === 'connected' ? 'connected' : 'disconnected';
   });
 
-  useDocPersistence(ydoc, roomId);
   trackRecentRoom(roomId);
 
   onUnmounted(() => {
