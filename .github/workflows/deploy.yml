@@ -20,7 +20,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     env:
-      VITE_SIGNALING_SERVERS: wss://coldbrew.baobeta.deno.net
+      VITE_SIGNALING_SERVERS: wss://coldbrew-api.brianle.dev
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -53,7 +53,7 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     env:
-      VITE_SIGNALING_SERVERS: wss://coldbrew.baobeta.deno.net
+      VITE_SIGNALING_SERVERS: wss://coldbrew-api.brianle.dev
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

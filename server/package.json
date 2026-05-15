@@ -1,0 +1,14 @@
+{
+  "name": "coldbrew-sync",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node main.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "yjs": "^13.6.30",
+    "y-protocols": "^1.0.6",
+    "lib0": "^0.2.108"
+  }
+}
