@@ -1,111 +1,206 @@
 /**
- * y-webrtc signaling server for Deno Deploy.
+ * y-websocket server for Deno Deploy.
  *
- * Compatible with y-webrtc's WebrtcProvider signaling protocol.
- * Deploy: https://dash.deno.com → New Project → Link GitHub repo → set entry to server/main.ts
+ * Implements the y-websocket binary protocol so clients using
+ * WebsocketProvider can sync Yjs documents over plain WebSocket.
+ *
+ * Room name = URL path (e.g. wss://host/writeboard-abc123).
  */
 
-const topics = new Map<string, Set<WebSocket>>();
+import * as Y from "npm:yjs@^13.6.30";
+import {
+  readSyncMessage,
+  writeSyncStep1,
+  writeSyncStep2,
+  writeUpdate,
+} from "npm:y-protocols@^1.0.6/sync";
+import {
+  applyAwarenessUpdate,
+  encodeAwarenessUpdate,
+  removeAwarenessStates,
+  Awareness,
+} from "npm:y-protocols@^1.0.6/awareness";
+import * as encoding from "npm:lib0@^0.2.108/encoding";
+import * as decoding from "npm:lib0@^0.2.108/decoding";
+
+const MESSAGE_SYNC = 0;
+const MESSAGE_AWARENESS = 1;
+
 const PING_TIMEOUT = 30_000;
 
-function send(conn: WebSocket, message: Record<string, unknown>): void {
-  if (conn.readyState === WebSocket.OPEN) {
-    try {
-      conn.send(JSON.stringify(message));
-    } catch {
-      conn.close();
+interface Room {
+  doc: Y.Doc;
+  awareness: Awareness;
+  conns: Map<WebSocket, Set<number>>;
+}
+
+const rooms = new Map<string, Room>();
+
+function getOrCreateRoom(name: string): Room {
+  let room = rooms.get(name);
+  if (room) return room;
+
+  const doc = new Y.Doc();
+  const awareness = new Awareness(doc);
+
+  awareness.on(
+    "update",
+    (
+      { added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
+      _origin: unknown,
+    ) => {
+      const changedClients = [...added, ...updated, ...removed];
+      const update = encodeAwarenessUpdate(awareness, changedClients);
+      const encoder = encoding.createEncoder();
+      encoding.writeVarUint(encoder, MESSAGE_AWARENESS);
+      encoding.writeVarUint8Array(encoder, update);
+      const msg = encoding.toUint8Array(encoder);
+      broadcastToRoom(room!, msg, null);
+    },
+  );
+
+  doc.on("update", (update: Uint8Array, origin: unknown) => {
+    const encoder = encoding.createEncoder();
+    encoding.writeVarUint(encoder, MESSAGE_SYNC);
+    writeUpdate(encoder, update);
+    const msg = encoding.toUint8Array(encoder);
+    broadcastToRoom(room!, msg, origin);
+  });
+
+  room = { doc, awareness, conns: new Map() };
+  rooms.set(name, room);
+  return room;
+}
+
+function broadcastToRoom(room: Room, msg: Uint8Array, origin: unknown): void {
+  for (const [conn] of room.conns) {
+    if (conn !== origin && conn.readyState === WebSocket.OPEN) {
+      try {
+        conn.send(msg);
+      } catch {
+        closeConn(room, conn);
+      }
     }
   }
 }
 
-function onConnection(conn: WebSocket): void {
-  const subscribedTopics = new Set<string>();
-  let closed = false;
-  let pongReceived = true;
+function closeConn(room: Room, conn: WebSocket): void {
+  const controlledIds = room.conns.get(conn);
+  room.conns.delete(conn);
 
+  if (controlledIds) {
+    removeAwarenessStates(room.awareness, Array.from(controlledIds), null);
+  }
+
+  if (room.conns.size === 0) {
+    const roomName = [...rooms.entries()].find(([, r]) => r === room)?.[0];
+    if (roomName) {
+      room.awareness.destroy();
+      room.doc.destroy();
+      rooms.delete(roomName);
+    }
+  }
+}
+
+function handleMessage(room: Room, conn: WebSocket, data: Uint8Array): void {
+  try {
+    const decoder = decoding.createDecoder(data);
+    const messageType = decoding.readVarUint(decoder);
+
+    switch (messageType) {
+      case MESSAGE_SYNC: {
+        const encoder = encoding.createEncoder();
+        encoding.writeVarUint(encoder, MESSAGE_SYNC);
+        readSyncMessage(decoder, encoder, room.doc, conn);
+        if (encoding.length(encoder) > 1) {
+          conn.send(encoding.toUint8Array(encoder));
+        }
+        break;
+      }
+      case MESSAGE_AWARENESS: {
+        const update = decoding.readVarUint8Array(decoder);
+        applyAwarenessUpdate(room.awareness, update, conn);
+        const connControlled = room.conns.get(conn);
+        if (connControlled) {
+          const d = decoding.createDecoder(update);
+          const len = decoding.readVarUint(d);
+          for (let i = 0; i < len; i++) {
+            const clientID = decoding.readVarUint(d);
+            connControlled.add(clientID);
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  } catch {
+    // malformed message — ignore
+  }
+}
+
+function onConnection(conn: WebSocket, roomName: string): void {
+  const room = getOrCreateRoom(roomName);
+  room.conns.set(conn, new Set());
+
+  let alive = true;
   const pingInterval = setInterval(() => {
-    if (!pongReceived) {
-      conn.close();
+    if (!alive) {
+      closeConn(room, conn);
+      try { conn.close(); } catch { /* already closed */ }
       clearInterval(pingInterval);
     } else {
-      pongReceived = false;
-      try {
-        conn.send(JSON.stringify({ type: "ping" }));
-      } catch {
-        conn.close();
-      }
+      alive = false;
     }
   }, PING_TIMEOUT);
 
-  conn.addEventListener("pong", () => {
-    pongReceived = true;
-  });
-
   conn.addEventListener("close", () => {
-    closed = true;
     clearInterval(pingInterval);
-    for (const topicName of subscribedTopics) {
-      const subs = topics.get(topicName);
-      if (subs) {
-        subs.delete(conn);
-        if (subs.size === 0) {
-          topics.delete(topicName);
-        }
-      }
-    }
-    subscribedTopics.clear();
+    closeConn(room, conn);
   });
 
-  conn.addEventListener("message", (event) => {
-    if (closed) return;
-    let message: any;
-    try {
-      message = JSON.parse(typeof event.data === "string" ? event.data : "");
-    } catch {
+  conn.addEventListener("message", (event: MessageEvent) => {
+    alive = true;
+    let data: Uint8Array;
+    if (event.data instanceof ArrayBuffer) {
+      data = new Uint8Array(event.data);
+    } else if (event.data instanceof Uint8Array) {
+      data = event.data;
+    } else {
       return;
     }
-
-    if (!message || !message.type) return;
-
-    switch (message.type) {
-      case "subscribe":
-        for (const topicName of message.topics || []) {
-          if (typeof topicName === "string") {
-            if (!topics.has(topicName)) {
-              topics.set(topicName, new Set());
-            }
-            topics.get(topicName)!.add(conn);
-            subscribedTopics.add(topicName);
-          }
-        }
-        break;
-
-      case "unsubscribe":
-        for (const topicName of message.topics || []) {
-          const subs = topics.get(topicName);
-          if (subs) {
-            subs.delete(conn);
-          }
-        }
-        break;
-
-      case "publish":
-        if (message.topic) {
-          const receivers = topics.get(message.topic);
-          if (receivers) {
-            message.clients = receivers.size;
-            for (const receiver of receivers) {
-              send(receiver, message);
-            }
-          }
-        }
-        break;
-
-      case "ping":
-        send(conn, { type: "pong" });
-        break;
-    }
+    handleMessage(room, conn, data);
   });
+
+  // Send sync step 1 — asks client for its state
+  {
+    const encoder = encoding.createEncoder();
+    encoding.writeVarUint(encoder, MESSAGE_SYNC);
+    writeSyncStep1(encoder, room.doc);
+    conn.send(encoding.toUint8Array(encoder));
+  }
+
+  // Send sync step 2 — full doc state to client
+  {
+    const encoder = encoding.createEncoder();
+    encoding.writeVarUint(encoder, MESSAGE_SYNC);
+    writeSyncStep2(encoder, room.doc);
+    conn.send(encoding.toUint8Array(encoder));
+  }
+
+  // Send current awareness states
+  {
+    const states = room.awareness.getStates();
+    if (states.size > 0) {
+      const encoder = encoding.createEncoder();
+      encoding.writeVarUint(encoder, MESSAGE_AWARENESS);
+      encoding.writeVarUint8Array(
+        encoder,
+        encodeAwarenessUpdate(room.awareness, Array.from(states.keys())),
+      );
+      conn.send(encoding.toUint8Array(encoder));
+    }
+  }
 }
 
 Deno.serve({ port: Number(Deno.env.get("PORT")) || 4444 }, (req) => {
@@ -117,9 +212,15 @@ Deno.serve({ port: Number(Deno.env.get("PORT")) || 4444 }, (req) => {
 
   if (req.headers.get("upgrade")?.toLowerCase() === "websocket") {
     const { socket, response } = Deno.upgradeWebSocket(req);
-    onConnection(socket);
+    const roomName = url.pathname.slice(1) || "default";
+    socket.binaryType = "arraybuffer";
+
+    socket.addEventListener("open", () => {
+      onConnection(socket, roomName);
+    });
+
     return response;
   }
 
-  return new Response("Writeboard Signaling Server", { status: 200 });
+  return new Response("Writeboard Sync Server", { status: 200 });
 });

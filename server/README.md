@@ -1,6 +1,6 @@
-# Writeboard Signaling Server
+# Writeboard Sync Server
 
-A y-webrtc signaling server for Deno Deploy. Helps peers discover each other for WebRTC connections.
+A y-websocket server for Deno Deploy. Maintains Yjs documents in memory and syncs them to all connected clients over WebSocket.
 
 ## Deploy to Deno Deploy (Free)
 

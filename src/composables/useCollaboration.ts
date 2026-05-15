@@ -1,6 +1,6 @@
 import { ref, onUnmounted } from 'vue';
 import * as Y from 'yjs';
-import { WebrtcProvider } from 'y-webrtc';
+import { WebsocketProvider } from 'y-websocket';
 import { config } from '@/config';
 import { useDocPersistence, trackRecentRoom } from '@/composables/useLocalStorage';
 import type { Participant, ConnectionStatus, CollaborationReturn } from '@/types';
@@ -26,14 +26,11 @@ function randomColor(): string {
 
 export function useCollaboration(roomId: string): CollaborationReturn {
   const ydoc = new Y.Doc();
-  const provider = new WebrtcProvider(`writeboard-${roomId}`, ydoc, {
-    signaling: config.signalingServers,
-    peerOpts: {
-      config: {
-        iceServers: config.iceServers,
-      },
-    },
-  });
+  const provider = new WebsocketProvider(
+    config.websocketServer,
+    `writeboard-${roomId}`,
+    ydoc,
+  );
 
   const userName = localStorage.getItem('writeboard-username');
   const userColor = randomColor();
@@ -69,8 +66,8 @@ export function useCollaboration(roomId: string): CollaborationReturn {
   provider.awareness.on('change', syncParticipants);
   syncParticipants();
 
-  provider.on('status', (event: { connected: boolean }) => {
-    connectionStatus.value = event.connected ? 'connected' : 'disconnected';
+  provider.on('status', (event: { status: string }) => {
+    connectionStatus.value = event.status === 'connected' ? 'connected' : 'disconnected';
   });
 
   useDocPersistence(ydoc, roomId);
