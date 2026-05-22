@@ -1,12 +1,13 @@
 import { ref, computed, onUnmounted } from 'vue';
 import { distance as levenshtein } from 'fastest-levenshtein';
+import { diffArrays } from 'diff';
 
 export { levenshtein };
 
 export interface WordResult {
   expected: string;
   actual: string | null;
-  status: 'correct' | 'close' | 'wrong' | 'missing';
+  status: 'correct' | 'close' | 'wrong' | 'missing' | 'extra';
 }
 
 export interface PracticeState {
@@ -21,22 +22,71 @@ export function normalize(word: string): string {
   return word.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+function classifySubstitution(expected: string, actual: string): 'close' | 'wrong' {
+  const norm = normalize(expected);
+  const spokenNorm = normalize(actual);
+  if (!norm || !spokenNorm) return 'wrong';
+  const dist = levenshtein(norm, spokenNorm);
+  const threshold = Math.max(1, Math.floor(norm.length * 0.3));
+  return dist <= threshold ? 'close' : 'wrong';
+}
+
 export function compareWords(expected: string[], actual: string[]): WordResult[] {
-  return expected.map((word, i) => {
-    const norm = normalize(word);
-    if (!norm) return { expected: word, actual: null, status: 'correct' as const };
+  const normExpected = expected.map(normalize);
+  const normActual = actual.map(normalize);
 
-    const spokenNorm = i < actual.length ? normalize(actual[i]) : null;
-    if (!spokenNorm) return { expected: word, actual: null, status: 'missing' as const };
-
-    if (norm === spokenNorm) return { expected: word, actual: actual[i], status: 'correct' as const };
-
-    const dist = levenshtein(norm, spokenNorm);
-    const threshold = Math.max(1, Math.floor(norm.length * 0.3));
-    if (dist <= threshold) return { expected: word, actual: actual[i], status: 'close' as const };
-
-    return { expected: word, actual: actual[i], status: 'wrong' as const };
+  const changes = diffArrays(normExpected, normActual, {
+    comparator: (a, b) => a === b,
   });
+
+  const results: WordResult[] = [];
+  let ei = 0;
+  let ai = 0;
+
+  for (let c = 0; c < changes.length; c++) {
+    const change = changes[c];
+    const next = c + 1 < changes.length ? changes[c + 1] : null;
+
+    if (!change.added && !change.removed) {
+      for (let j = 0; j < change.count!; j++) {
+        results.push({ expected: expected[ei], actual: actual[ai], status: 'correct' });
+        ei++;
+        ai++;
+      }
+    } else if (change.removed && next?.added) {
+      const removedCount = change.count!;
+      const addedCount = next.count!;
+      const pairs = Math.min(removedCount, addedCount);
+
+      for (let j = 0; j < pairs; j++) {
+        const status = classifySubstitution(expected[ei], actual[ai]);
+        results.push({ expected: expected[ei], actual: actual[ai], status });
+        ei++;
+        ai++;
+      }
+      for (let j = pairs; j < removedCount; j++) {
+        results.push({ expected: expected[ei], actual: null, status: 'missing' });
+        ei++;
+      }
+      for (let j = pairs; j < addedCount; j++) {
+        results.push({ expected: '', actual: actual[ai], status: 'extra' });
+        ai++;
+      }
+      c++;
+    } else if (change.removed) {
+      for (let j = 0; j < change.count!; j++) {
+        results.push({ expected: expected[ei], actual: null, status: 'missing' });
+        ei++;
+      }
+    } else if (change.added) {
+      for (let j = 0; j < change.count!; j++) {
+        results.push({ expected: '', actual: actual[ai], status: 'extra' });
+        ai++;
+      }
+    }
+  }
+
+  return results;
 }
 
 export function usePractice(provider: any) {

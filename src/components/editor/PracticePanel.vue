@@ -38,10 +38,11 @@
               'bg-yellow-100 text-yellow-800': word.status === 'close',
               'bg-red-100 text-red-800': word.status === 'wrong',
               'bg-gray-100 text-gray-400 line-through': word.status === 'missing',
+              'bg-blue-100 text-blue-800 italic': word.status === 'extra',
             }"
             :title="word.actual ? `You said: ${word.actual}` : 'Not spoken'"
           >
-            {{ word.expected }}
+            {{ word.status === 'extra' ? word.actual : word.expected }}
           </span>
         </div>
         <div class="mt-2 text-sm text-text-muted">

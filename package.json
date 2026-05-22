@@ -25,6 +25,7 @@
     "@tiptap/vue-3": "^3.23.1",
     "@tiptap/y-tiptap": "^3.0.3",
     "@vueuse/core": "^14.3.0",
+    "diff": "^9.0.0",
     "fastest-levenshtein": "^1.0.16",
     "nanoid": "^5.1.11",
     "tailwindcss": "^4.3.0",
