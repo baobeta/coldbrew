@@ -13,7 +13,7 @@
       @rename="onRename"
       @delete="deleteNode"
     />
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
       <Toolbar :editor="liveEditor">
         <template #right>
           <MicButton
@@ -64,6 +64,7 @@ import { useVoiceCapture } from '@/composables/useVoiceCapture';
 
 const props = defineProps({
   roomId: { type: String, required: true },
+  initialPageId: { type: String, default: null },
 });
 
 const sidebarOpen = ref(window.innerWidth >= 768);
@@ -83,7 +84,7 @@ const {
   setActivePage,
   toggleFolder,
   getFragment,
-} = useFileTree(ydoc, provider);
+} = useFileTree(ydoc, provider, props.initialPageId);
 
 const currentFragment = computed(() => {
   if (!activePageId.value) return null;

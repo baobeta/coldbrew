@@ -15,9 +15,22 @@ import type { TreeNode } from '@/types';
  * This avoids nesting Y.Array inside Y.Map (which prevents moves).
  */
 
+function updateHashPage(pageId: string | null): void {
+  const hash = window.location.hash;
+  const hasPage = /page=[a-zA-Z0-9_-]+/.test(hash);
+  if (pageId) {
+    window.location.hash = hasPage
+      ? hash.replace(/page=[a-zA-Z0-9_-]+/, `page=${pageId}`)
+      : `${hash}&page=${pageId}`;
+  } else if (hasPage) {
+    window.location.hash = hash.replace(/&?page=[a-zA-Z0-9_-]+/, '');
+  }
+}
+
 export function useFileTree(
   ydoc: Y.Doc,
   provider: { awareness: any; on: (event: string, cb: (data: any) => void) => void },
+  initialPageId: string | null = null,
 ) {
   const tree = ref<TreeNode[]>([]);
   const activePageId = ref<string | null>(null);
@@ -71,8 +84,7 @@ export function useFileTree(
       getParentArray(parentId).push([id]);
     });
 
-    activePageId.value = id;
-    broadcastActivePage(id);
+    setActivePage(id);
     return id;
   }
 
@@ -130,6 +142,7 @@ export function useFileTree(
       const firstPage = findFirstPage();
       activePageId.value = firstPage;
       broadcastActivePage(firstPage);
+      updateHashPage(firstPage);
     }
   }
 
@@ -177,9 +190,26 @@ export function useFileTree(
     return search(rootChildren);
   }
 
+  function expandAncestors(nodeId: string): void {
+    const folders: string[] = [];
+    let currentId: string | null = nodeId;
+    while (currentId) {
+      const nodeMap = nodesMap.get(currentId);
+      if (!nodeMap) break;
+      const parentId = nodeMap.get('parentId') as string | null;
+      if (parentId) folders.push(parentId);
+      currentId = parentId;
+    }
+    if (folders.length) {
+      expandedFolders.value = new Set([...expandedFolders.value, ...folders]);
+    }
+  }
+
   function setActivePage(id: string): void {
     activePageId.value = id;
     broadcastActivePage(id);
+    updateHashPage(id);
+    queueMicrotask(() => expandAncestors(id));
   }
 
   function toggleFolder(id: string): void {
@@ -224,14 +254,20 @@ export function useFileTree(
   syncTree();
   observeFolderChildren();
 
+  function pageExists(id: string): boolean {
+    const nodeMap = nodesMap.get(id);
+    return !!nodeMap && nodeMap.get('type') === 'page';
+  }
+
   function initDefaultPage(): void {
     if (tree.value.length === 0) {
       createPage('Untitled');
     } else if (!activePageId.value) {
-      const firstPage = findFirstPage();
-      if (firstPage) {
-        activePageId.value = firstPage;
-        broadcastActivePage(firstPage);
+      const targetPage = initialPageId && pageExists(initialPageId) ? initialPageId : findFirstPage();
+      if (targetPage) {
+        activePageId.value = targetPage;
+        broadcastActivePage(targetPage);
+        updateHashPage(targetPage);
       }
     }
   }

@@ -3,7 +3,7 @@
     <ErrorBoundary>
       <UserNameModal v-if="needsName" @submit="onNameSubmit" />
       <HomePage v-else-if="!roomId" />
-      <RoomPage v-else :room-id="roomId" :key="roomId" />
+      <RoomPage v-else :room-id="roomId" :initial-page-id="pageId" :key="roomId" />
     </ErrorBoundary>
   </div>
 </template>
@@ -18,6 +18,7 @@ import { getStoredUserName, setStoredUserName } from '@/composables/useLocalStor
 import { useEventListener } from '@vueuse/core';
 
 const roomId = ref(null);
+const pageId = ref(null);
 const needsName = ref(!getStoredUserName());
 
 function onNameSubmit(name) {
@@ -27,8 +28,10 @@ function onNameSubmit(name) {
 
 function parseHash() {
   const hash = window.location.hash;
-  const match = hash.match(/room=([a-zA-Z0-9_-]+)/);
-  roomId.value = match ? match[1] : null;
+  const roomMatch = hash.match(/room=([a-zA-Z0-9_-]+)/);
+  const pageMatch = hash.match(/page=([a-zA-Z0-9_-]+)/);
+  roomId.value = roomMatch ? roomMatch[1] : null;
+  pageId.value = pageMatch ? pageMatch[1] : null;
 }
 
 parseHash();
