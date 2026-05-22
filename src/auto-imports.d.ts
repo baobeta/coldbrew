@@ -7,6 +7,7 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue').EffectScope
+  const compareWords: typeof import('./composables/usePractice').compareWords
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
   const customRef: typeof import('vue').customRef
@@ -24,8 +25,10 @@ declare global {
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
+  const levenshtein: typeof import('./composables/usePractice').levenshtein
   const markRaw: typeof import('vue').markRaw
   const nextTick: typeof import('vue').nextTick
+  const normalize: typeof import('./composables/usePractice').normalize
   const onActivated: typeof import('vue').onActivated
   const onBeforeMount: typeof import('vue').onBeforeMount
   const onBeforeUnmount: typeof import('vue').onBeforeUnmount
@@ -64,6 +67,7 @@ declare global {
   const useFileTree: typeof import('./composables/useFileTree').useFileTree
   const useId: typeof import('vue').useId
   const useModel: typeof import('vue').useModel
+  const usePractice: typeof import('./composables/usePractice').usePractice
   const useSlots: typeof import('vue').useSlots
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useVoiceCapture: typeof import('./composables/useVoiceCapture').useVoiceCapture
@@ -77,6 +81,9 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { WordResult, PracticeState } from './composables/usePractice'
+  import('./composables/usePractice')
 }
 
 // for vue template auto import
@@ -85,6 +92,7 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly compareWords: UnwrapRef<typeof import('./composables/usePractice')['compareWords']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
@@ -102,8 +110,10 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
+    readonly levenshtein: UnwrapRef<typeof import('./composables/usePractice')['levenshtein']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly normalize: UnwrapRef<typeof import('./composables/usePractice')['normalize']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
@@ -142,6 +152,7 @@ declare module 'vue' {
     readonly useFileTree: UnwrapRef<typeof import('./composables/useFileTree')['useFileTree']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
+    readonly usePractice: UnwrapRef<typeof import('./composables/usePractice')['usePractice']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useVoiceCapture: UnwrapRef<typeof import('./composables/useVoiceCapture')['useVoiceCapture']>

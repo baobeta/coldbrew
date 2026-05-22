@@ -18,6 +18,7 @@ declare module 'vue' {
     InterimBanner: typeof import('./components/editor/InterimBanner.vue')['default']
     MicButton: typeof import('./components/editor/MicButton.vue')['default']
     ParticipantsList: typeof import('./components/sidebar/ParticipantsList.vue')['default']
+    PracticePanel: typeof import('./components/editor/PracticePanel.vue')['default']
     RoomPage: typeof import('./components/RoomPage.vue')['default']
     ShareButton: typeof import('./components/editor/ShareButton.vue')['default']
     Sidebar: typeof import('./components/sidebar/Sidebar.vue')['default']
