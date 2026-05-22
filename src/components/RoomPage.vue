@@ -14,7 +14,7 @@
       @delete="deleteNode"
     />
     <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-      <Toolbar :editor="liveEditor" @start-practice="onStartPractice">
+      <Toolbar :editor="liveEditor" :speech-rate="speechRate" :speed-label="speedLabel" @start-practice="onStartPractice" @cycle-speed="cycleSpeed">
         <template #right>
           <MicButton
             :is-listening="isListening"
@@ -53,11 +53,13 @@
         :score="practiceScore"
         :total="practiceTotal"
         :remote-practice="remotePractice"
+        :speed-label="speedLabel"
         @close="closePractice"
         @record="practiceRecord"
         @stop-record="practiceStopRecord"
         @try-again="practiceTryAgain"
-        @speak-target="practiceSpeakTarget"
+        @speak-target="practiceSpeakTarget(speechRate)"
+        @cycle-speed="cycleSpeed"
       />
       <div class="px-4 py-2 text-right">
         <span class="text-xs text-text-muted">{{ statusText }}</span>
@@ -68,6 +70,15 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+
+const SPEED_OPTIONS = [0.5, 0.75, 1];
+const SPEED_LABELS = ['0.5x', '0.75x', '1x'];
+const speedIndex = ref(2);
+const speechRate = computed(() => SPEED_OPTIONS[speedIndex.value]);
+const speedLabel = computed(() => SPEED_LABELS[speedIndex.value]);
+function cycleSpeed() {
+  speedIndex.value = (speedIndex.value + 1) % SPEED_OPTIONS.length;
+}
 import TiptapEditor from '@/components/editor/TiptapEditor.vue';
 import Toolbar from '@/components/editor/Toolbar.vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';

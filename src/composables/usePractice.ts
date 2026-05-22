@@ -217,11 +217,11 @@ export function usePractice(provider: any) {
     broadcastState();
   }
 
-  function speakTarget() {
+  function speakTarget(rate: number = 1) {
     if (!targetText.value) return;
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(targetText.value);
-    utterance.rate = 0.85;
+    utterance.rate = rate;
     speechSynthesis.speak(utterance);
   }
 

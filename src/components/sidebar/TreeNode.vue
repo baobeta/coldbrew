@@ -282,10 +282,18 @@ function hideContextMenu() {
   contextMenu.value = false;
 }
 
+function confirmDelete() {
+  const typeLabel = props.node.type === 'folder' ? 'folder' : 'page';
+  const message = `Delete "${props.node.title}"?\n\nThis ${typeLabel} will be permanently removed.`;
+  if (window.confirm(message)) {
+    emit('delete', props.node.id);
+  }
+}
+
 function onContextAction(action) {
   contextMenu.value = false;
   if (action === 'rename') startRename();
-  else if (action === 'delete') emit('delete', props.node.id);
+  else if (action === 'delete') confirmDelete();
   else if (action === 'new-page') emit('create-page', props.node.id);
   else if (action === 'new-folder') emit('create-folder', props.node.id);
 }

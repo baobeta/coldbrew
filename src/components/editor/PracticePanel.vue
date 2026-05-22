@@ -104,6 +104,13 @@
           </svg>
           Listen
         </button>
+        <button
+          @click="$emit('cycle-speed')"
+          title="Playback speed"
+          class="px-2 py-2 border border-border rounded-lg bg-white text-text-muted text-xs font-ui font-medium cursor-pointer transition-colors hover:bg-black/5 min-w-9"
+        >
+          {{ speedLabel }}
+        </button>
       </div>
     </div>
   </div>
@@ -119,7 +126,8 @@ defineProps({
   score: { type: Number, default: null },
   total: { type: Number, default: null },
   remotePractice: { type: Object, default: null },
+  speedLabel: { type: String, default: '1x' },
 });
 
-defineEmits(['close', 'record', 'stop-record', 'try-again', 'speak-target']);
+defineEmits(['close', 'record', 'stop-record', 'try-again', 'speak-target', 'cycle-speed']);
 </script>

@@ -107,6 +107,13 @@
         </svg>
       </button>
       <button
+        @click="$emit('cycle-speed')"
+        title="Playback speed"
+        class="px-1.5 py-1.5 border-none rounded bg-transparent text-text-muted text-xs font-ui font-medium cursor-pointer transition-colors leading-none hover:bg-black/5 min-w-8"
+      >
+        {{ speedLabel }}
+      </button>
+      <button
         @click="$emit('start-practice')"
         :disabled="!hasSelection"
         title="Practice pronunciation"
@@ -133,10 +140,12 @@ const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+';
 const isSpeaking = ref(false);
 const hasSelection = ref(false);
 
-const emit = defineEmits(['start-practice']);
+const emit = defineEmits(['start-practice', 'cycle-speed']);
 
 const props = defineProps({
   editor: { type: Object, default: null },
+  speechRate: { type: Number, default: 1 },
+  speedLabel: { type: String, default: '1x' },
 });
 
 function updateSelection() {
@@ -170,6 +179,7 @@ function speakSelection() {
   }
 
   const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = props.speechRate;
   utterance.addEventListener('end', () => { isSpeaking.value = false; });
   utterance.addEventListener('error', () => { isSpeaking.value = false; });
   isSpeaking.value = true;
