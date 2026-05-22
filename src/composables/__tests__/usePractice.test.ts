@@ -54,24 +54,18 @@ describe('compareWords (diff-based)', () => {
       ['The', 'weather', 'is', 'nice'],
       ['The', 'weather', 'is', 'nice'],
     );
-    expect(results.every(r => r.status === 'correct')).toBe(true);
+    expect(results.every((r) => r.status === 'correct')).toBe(true);
     expect(results).toHaveLength(4);
   });
 
   it('is case-insensitive', () => {
-    const results = compareWords(
-      ['Hello', 'World'],
-      ['hello', 'world'],
-    );
+    const results = compareWords(['Hello', 'World'], ['hello', 'world']);
     expect(results[0].status).toBe('correct');
     expect(results[1].status).toBe('correct');
   });
 
   it('ignores punctuation in comparison', () => {
-    const results = compareWords(
-      ['Hello,', 'world!'],
-      ['Hello', 'world'],
-    );
+    const results = compareWords(['Hello,', 'world!'], ['Hello', 'world']);
     expect(results[0].status).toBe('correct');
     expect(results[1].status).toBe('correct');
   });
@@ -81,38 +75,29 @@ describe('compareWords (diff-based)', () => {
       ['The', 'weather', 'is', 'beautiful', 'today'],
       ['The', 'weather'],
     );
-    const statuses = results.map(r => r.status);
+    const statuses = results.map((r) => r.status);
     expect(statuses[0]).toBe('correct');
     expect(statuses[1]).toBe('correct');
     expect(statuses).toContain('missing');
-    expect(results.filter(r => r.status === 'missing')).toHaveLength(3);
+    expect(results.filter((r) => r.status === 'missing')).toHaveLength(3);
   });
 
   it('marks wrong words when completely different', () => {
-    const results = compareWords(
-      ['beach'],
-      ['mountain'],
-    );
+    const results = compareWords(['beach'], ['mountain']);
     expect(results[0].status).toBe('wrong');
   });
 
   it('marks close words within levenshtein threshold', () => {
     // "beautiful" (9 chars) -> threshold = floor(9 * 0.3) = 2
     // "beautful" is 1 edit away -> close
-    const results = compareWords(
-      ['beautiful'],
-      ['beautful'],
-    );
+    const results = compareWords(['beautiful'], ['beautful']);
     expect(results[0].status).toBe('close');
   });
 
   it('marks close for minor misspelling', () => {
     // "weather" (7 chars) -> threshold = floor(7 * 0.3) = 2
     // "wether" is 1 edit away -> close
-    const results = compareWords(
-      ['weather'],
-      ['wether'],
-    );
+    const results = compareWords(['weather'], ['wether']);
     expect(results[0].status).toBe('close');
   });
 
@@ -122,22 +107,19 @@ describe('compareWords (diff-based)', () => {
       ['The', 'weather', 'is', 'beautiful', 'today'],
       ['The', 'is', 'beautiful', 'today'],
     );
-    const correct = results.filter(r => r.status === 'correct');
-    const missing = results.filter(r => r.status === 'missing');
-    expect(correct).toHaveLength(4);  // The, is, beautiful, today
-    expect(missing).toHaveLength(1);  // weather
+    const correct = results.filter((r) => r.status === 'correct');
+    const missing = results.filter((r) => r.status === 'missing');
+    expect(correct).toHaveLength(4); // The, is, beautiful, today
+    expect(missing).toHaveLength(1); // weather
     expect(missing[0].expected).toBe('weather');
   });
 
   it('handles extra spoken words', () => {
-    const results = compareWords(
-      ['hello', 'world'],
-      ['hello', 'big', 'world'],
-    );
-    const correct = results.filter(r => r.status === 'correct');
-    const extra = results.filter(r => r.status === 'extra');
-    expect(correct).toHaveLength(2);  // hello, world
-    expect(extra).toHaveLength(1);    // big
+    const results = compareWords(['hello', 'world'], ['hello', 'big', 'world']);
+    const correct = results.filter((r) => r.status === 'correct');
+    const extra = results.filter((r) => r.status === 'extra');
+    expect(correct).toHaveLength(2); // hello, world
+    expect(extra).toHaveLength(1); // big
     expect(extra[0].actual).toBe('big');
   });
 
@@ -146,10 +128,13 @@ describe('compareWords (diff-based)', () => {
       ['The', 'weather', 'is', 'beautiful', 'today'],
       ['The', 'wether', 'is', 'bootiful', 'today'],
     );
-    const statusMap = results.reduce((acc, r) => {
-      if (r.expected) acc[normalize(r.expected)] = r.status;
-      return acc;
-    }, {} as Record<string, string>);
+    const statusMap = results.reduce(
+      (acc, r) => {
+        if (r.expected) acc[normalize(r.expected)] = r.status;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
     expect(statusMap['the']).toBe('correct');
     expect(statusMap['is']).toBe('correct');
     expect(statusMap['today']).toBe('correct');
@@ -160,10 +145,7 @@ describe('compareWords (diff-based)', () => {
   });
 
   it('preserves original expected word in result', () => {
-    const results = compareWords(
-      ['Hello,'],
-      ['hello'],
-    );
+    const results = compareWords(['Hello,'], ['hello']);
     expect(results[0].expected).toBe('Hello,');
   });
 
@@ -187,27 +169,21 @@ describe('compareWords (diff-based)', () => {
       ['I', 'would', 'like', 'to', 'go', 'home'],
       ['I', 'like', 'go', 'home'],
     );
-    const correct = results.filter(r => r.status === 'correct');
-    const missing = results.filter(r => r.status === 'missing');
-    expect(correct).toHaveLength(4);  // I, like, go, home
-    expect(missing).toHaveLength(2);  // would, to
+    const correct = results.filter((r) => r.status === 'correct');
+    const missing = results.filter((r) => r.status === 'missing');
+    expect(correct).toHaveLength(4); // I, like, go, home
+    expect(missing).toHaveLength(2); // would, to
   });
 
   it('handles completely empty spoken input', () => {
-    const results = compareWords(
-      ['hello', 'world'],
-      [],
-    );
-    expect(results.every(r => r.status === 'missing')).toBe(true);
+    const results = compareWords(['hello', 'world'], []);
+    expect(results.every((r) => r.status === 'missing')).toBe(true);
     expect(results).toHaveLength(2);
   });
 
   it('handles completely empty expected input', () => {
-    const results = compareWords(
-      [],
-      ['hello', 'world'],
-    );
-    expect(results.every(r => r.status === 'extra')).toBe(true);
+    const results = compareWords([], ['hello', 'world']);
+    expect(results.every((r) => r.status === 'extra')).toBe(true);
     expect(results).toHaveLength(2);
   });
 

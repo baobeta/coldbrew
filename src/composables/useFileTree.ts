@@ -263,7 +263,8 @@ export function useFileTree(
     if (tree.value.length === 0) {
       createPage('Untitled');
     } else if (!activePageId.value) {
-      const targetPage = initialPageId && pageExists(initialPageId) ? initialPageId : findFirstPage();
+      const targetPage =
+        initialPageId && pageExists(initialPageId) ? initialPageId : findFirstPage();
       if (targetPage) {
         activePageId.value = targetPage;
         broadcastActivePage(targetPage);

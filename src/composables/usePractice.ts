@@ -100,12 +100,12 @@ export function usePractice(provider: any) {
 
   const score = computed(() => {
     if (!hasResult.value) return null;
-    return results.value.filter(r => r.status === 'correct' || r.status === 'close').length;
+    return results.value.filter((r) => r.status === 'correct' || r.status === 'close').length;
   });
 
   const total = computed(() => {
     if (!hasResult.value) return null;
-    return results.value.filter(r => normalize(r.expected)).length;
+    return results.value.filter((r) => normalize(r.expected)).length;
   });
 
   const SpeechRecognition =
@@ -162,7 +162,9 @@ export function usePractice(provider: any) {
     broadcastState();
 
     if (recognition) {
-      try { recognition.stop(); } catch {}
+      try {
+        recognition.stop();
+      } catch {}
     }
   }
 
@@ -194,7 +196,9 @@ export function usePractice(provider: any) {
   function stopRecording() {
     isRecording.value = false;
     if (recognition) {
-      try { recognition.stop(); } catch {}
+      try {
+        recognition.stop();
+      } catch {}
     }
   }
 

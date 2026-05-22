@@ -14,7 +14,13 @@
       @delete="deleteNode"
     />
     <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-      <Toolbar :editor="liveEditor" :speech-rate="speechRate" :speed-label="speedLabel" @start-practice="onStartPractice" @cycle-speed="cycleSpeed">
+      <Toolbar
+        :editor="liveEditor"
+        :speech-rate="speechRate"
+        :speed-label="speedLabel"
+        @start-practice="onStartPractice"
+        @cycle-speed="cycleSpeed"
+      >
         <template #right>
           <MicButton
             :is-listening="isListening"
