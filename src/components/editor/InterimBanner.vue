@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="text"
-    class="sticky top-0 z-10 px-4 py-2 bg-[#fef7e0] border-b border-[#f0e6c0] text-sm text-[#6b5b00] font-ui"
+    class="sticky top-[41px] z-10 px-4 py-2 bg-[#fef7e0] border-b border-[#f0e6c0] text-sm text-[#6b5b00] font-ui"
   >
     <span class="font-semibold">Hearing:</span> {{ text }}
   </div>

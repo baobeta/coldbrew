@@ -1,5 +1,7 @@
 <template>
-  <div class="border-t border-border bg-bg-sidebar px-6 py-4 max-md:px-4">
+  <div
+    class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[min(640px,calc(100%-2rem))] bg-bg-sidebar border border-border rounded-xl shadow-lg px-6 py-4 max-md:px-4"
+  >
     <div class="max-w-[720px] mx-auto">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-sm font-semibold text-text font-ui">
