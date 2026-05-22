@@ -106,6 +106,18 @@
           <path v-else d="M11 4l-1 4 1 4M13 4l-1 4 1 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>
         </svg>
       </button>
+      <button
+        @click="$emit('start-practice')"
+        :disabled="!hasSelection"
+        title="Practice pronunciation"
+        class="px-2.5 py-1.5 border-none rounded bg-transparent text-text text-sm font-ui cursor-pointer transition-colors leading-none hover:bg-black/5 disabled:opacity-30 disabled:cursor-default disabled:hover:bg-transparent"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3" fill="none"/>
+          <path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+          <path d="M11.5 3.5l1.5 1.5-1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </button>
     </div>
     <div v-else class="flex items-center gap-1"></div>
     <div class="flex items-center gap-2">
@@ -120,6 +132,8 @@ import { ref, watch, onUnmounted } from 'vue';
 const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+';
 const isSpeaking = ref(false);
 const hasSelection = ref(false);
+
+const emit = defineEmits(['start-practice']);
 
 const props = defineProps({
   editor: { type: Object, default: null },
