@@ -60,12 +60,16 @@
         :total="practiceTotal"
         :remote-practice="remotePractice"
         :speed-label="speedLabel"
+        :recording-url="practiceRecordingUrl"
+        :is-playing-recording="practiceIsPlaying"
         @close="closePractice"
         @record="practiceRecord"
         @stop-record="practiceStopRecord"
         @try-again="practiceTryAgain"
         @speak-target="practiceSpeakTarget(speechRate)"
         @cycle-speed="cycleSpeed"
+        @play-recording="practicePlayRecording"
+        @stop-playback="practiceStopPlayback"
       />
       <div class="px-4 py-2 text-right">
         <span class="text-xs text-text-muted">{{ statusText }}</span>
@@ -144,6 +148,8 @@ const {
   hasResult: practiceHasResult,
   score: practiceScore,
   total: practiceTotal,
+  recordingUrl: practiceRecordingUrl,
+  isPlayingRecording: practiceIsPlaying,
   remotePractice,
   startPractice,
   startRecording: practiceRecord,
@@ -151,6 +157,8 @@ const {
   tryAgain: practiceTryAgain,
   closePractice,
   speakTarget: practiceSpeakTarget,
+  playRecording: practicePlayRecording,
+  stopPlayback: practiceStopPlayback,
 } = usePractice(provider);
 
 function onStartPractice() {

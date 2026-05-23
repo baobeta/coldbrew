@@ -122,6 +122,25 @@
           Try Again
         </button>
         <button
+          v-if="hasResult && recordingUrl"
+          @click="isPlayingRecording ? $emit('stop-playback') : $emit('play-recording')"
+          class="flex items-center gap-1.5 px-4 py-2 text-sm font-ui font-medium text-text bg-white border border-border rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+          :class="{ 'border-accent text-accent': isPlayingRecording }"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2" fill="none" />
+            <path v-if="!isPlayingRecording" d="M5.5 4.5v5l4.5-2.5z" fill="currentColor" />
+            <path
+              v-else
+              d="M5 4.5v5M9 4.5v5"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+            />
+          </svg>
+          {{ isPlayingRecording ? 'Stop' : 'My Voice' }}
+        </button>
+        <button
           @click="$emit('speak-target')"
           class="flex items-center gap-1.5 px-4 py-2 text-sm font-ui font-medium text-text bg-white border border-border rounded-lg cursor-pointer transition-colors hover:bg-black/5"
         >
@@ -173,7 +192,18 @@ defineProps({
   total: { type: Number, default: null },
   remotePractice: { type: Object, default: null },
   speedLabel: { type: String, default: '1x' },
+  recordingUrl: { type: String, default: null },
+  isPlayingRecording: { type: Boolean, default: false },
 });
 
-defineEmits(['close', 'record', 'stop-record', 'try-again', 'speak-target', 'cycle-speed']);
+defineEmits([
+  'close',
+  'record',
+  'stop-record',
+  'try-again',
+  'speak-target',
+  'cycle-speed',
+  'play-recording',
+  'stop-playback',
+]);
 </script>

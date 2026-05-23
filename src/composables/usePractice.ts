@@ -97,6 +97,12 @@ export function usePractice(provider: any) {
   const interimText = ref('');
   const results = ref<WordResult[]>([]);
   const hasResult = ref(false);
+  const recordingUrl = ref<string | null>(null);
+  const isPlayingRecording = ref(false);
+
+  let mediaRecorder: MediaRecorder | null = null;
+  let audioChunks: Blob[] = [];
+  let audioElement: HTMLAudioElement | null = null;
 
   const score = computed(() => {
     if (!hasResult.value) return null;
@@ -178,15 +184,28 @@ export function usePractice(provider: any) {
     broadcastState();
   }
 
-  function startRecording() {
+  async function startRecording() {
     if (!recognition) return;
     spokenText.value = '';
     interimText.value = '';
     results.value = [];
     hasResult.value = false;
+    revokeRecordingUrl();
     isRecording.value = true;
 
     try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.addEventListener('dataavailable', (e) => {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      });
+      mediaRecorder.addEventListener('stop', () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        recordingUrl.value = URL.createObjectURL(blob);
+        stream.getTracks().forEach((t) => t.stop());
+      });
+      mediaRecorder.start();
       recognition.start();
     } catch {
       isRecording.value = false;
@@ -195,6 +214,9 @@ export function usePractice(provider: any) {
 
   function stopRecording() {
     isRecording.value = false;
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
     if (recognition) {
       try {
         recognition.stop();
@@ -202,16 +224,51 @@ export function usePractice(provider: any) {
     }
   }
 
+  function playRecording() {
+    if (!recordingUrl.value) return;
+    if (audioElement) {
+      audioElement.pause();
+      audioElement = null;
+    }
+    audioElement = new Audio(recordingUrl.value);
+    audioElement.addEventListener('ended', () => {
+      isPlayingRecording.value = false;
+    });
+    audioElement.addEventListener('error', () => {
+      isPlayingRecording.value = false;
+    });
+    isPlayingRecording.value = true;
+    audioElement.play();
+  }
+
+  function stopPlayback() {
+    if (audioElement) {
+      audioElement.pause();
+      audioElement = null;
+    }
+    isPlayingRecording.value = false;
+  }
+
+  function revokeRecordingUrl() {
+    if (recordingUrl.value) {
+      URL.revokeObjectURL(recordingUrl.value);
+      recordingUrl.value = null;
+    }
+    stopPlayback();
+  }
+
   function tryAgain() {
     spokenText.value = '';
     interimText.value = '';
     results.value = [];
     hasResult.value = false;
+    revokeRecordingUrl();
     broadcastState();
   }
 
   function closePractice() {
     stopRecording();
+    revokeRecordingUrl();
     isActive.value = false;
     targetText.value = '';
     spokenText.value = '';
@@ -270,6 +327,7 @@ export function usePractice(provider: any) {
 
   onUnmounted(() => {
     stopRecording();
+    revokeRecordingUrl();
     speechSynthesis.cancel();
     provider.awareness.off('change', syncRemotePractice);
   });
@@ -284,6 +342,8 @@ export function usePractice(provider: any) {
     hasResult,
     score,
     total,
+    recordingUrl,
+    isPlayingRecording,
     remotePractice,
     startPractice,
     startRecording,
@@ -291,5 +351,7 @@ export function usePractice(provider: any) {
     tryAgain,
     closePractice,
     speakTarget,
+    playRecording,
+    stopPlayback,
   };
 }
