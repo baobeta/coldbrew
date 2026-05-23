@@ -36,7 +36,13 @@
       </div>
 
       <div v-if="hasResult" class="mb-3">
-        <div class="text-xs uppercase tracking-wide text-text-muted mb-1.5">Your pronunciation</div>
+        <div class="text-xs uppercase tracking-wide text-text-muted mb-1.5">You said</div>
+        <div
+          class="text-base text-text-muted font-body leading-relaxed bg-white rounded-lg px-4 py-3 border border-border mb-2 italic"
+        >
+          {{ spokenText }}
+        </div>
+        <div class="text-xs uppercase tracking-wide text-text-muted mb-1.5">Comparison</div>
         <div class="flex flex-wrap gap-1.5 bg-white rounded-lg px-4 py-3 border border-border">
           <span
             v-for="(word, i) in results"
@@ -70,8 +76,37 @@
       </div>
 
       <div v-if="remotePractice?.score != null && !hasResult" class="mb-3">
+        <div class="text-xs uppercase tracking-wide text-text-muted mb-1.5">
+          {{ remotePractice.practicerName }} said
+        </div>
+        <div
+          v-if="remotePractice.spokenText"
+          class="text-base text-text-muted font-body leading-relaxed bg-white rounded-lg px-4 py-3 border border-border mb-2 italic"
+        >
+          {{ remotePractice.spokenText }}
+        </div>
+        <div v-if="remotePractice.results?.length" class="mb-2">
+          <div class="text-xs uppercase tracking-wide text-text-muted mb-1.5">Comparison</div>
+          <div class="flex flex-wrap gap-1.5 bg-white rounded-lg px-4 py-3 border border-border">
+            <span
+              v-for="(word, i) in remotePractice.results"
+              :key="i"
+              class="px-1.5 py-0.5 rounded text-base font-body"
+              :class="{
+                'bg-green-100 text-green-800': word.status === 'correct',
+                'bg-yellow-100 text-yellow-800': word.status === 'close',
+                'bg-red-100 text-red-800': word.status === 'wrong',
+                'bg-gray-100 text-gray-400 line-through': word.status === 'missing',
+                'bg-blue-100 text-blue-800 italic': word.status === 'extra',
+              }"
+              :title="word.actual ? `Said: ${word.actual}` : 'Not spoken'"
+            >
+              {{ word.status === 'extra' ? word.actual : word.expected }}
+            </span>
+          </div>
+        </div>
         <div class="text-sm text-text-muted">
-          {{ remotePractice.practicerName }}'s score:
+          Score:
           <strong class="text-text">{{ remotePractice.score }}/{{ remotePractice.total }}</strong>
           <span v-if="remotePractice.score === remotePractice.total" class="text-green-600 ml-1"
             >Perfect!</span
@@ -188,6 +223,7 @@ defineProps({
   hasResult: { type: Boolean, default: false },
   isRecording: { type: Boolean, default: false },
   interimText: { type: String, default: '' },
+  spokenText: { type: String, default: '' },
   score: { type: Number, default: null },
   total: { type: Number, default: null },
   remotePractice: { type: Object, default: null },

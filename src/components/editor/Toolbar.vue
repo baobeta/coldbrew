@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="flex items-center justify-between px-4 py-2 border-b border-border bg-bg sticky top-0 z-20 max-md:px-3"
-  >
+  <div class="flex items-center justify-between px-4 py-2 border-b border-border bg-bg max-md:px-3">
     <div class="flex items-center gap-1" v-if="editor">
       <div class="flex gap-0.5">
         <button

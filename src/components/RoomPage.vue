@@ -13,66 +13,71 @@
       @rename="onRename"
       @delete="deleteNode"
     />
-    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-      <Toolbar
-        :editor="liveEditor"
-        :speech-rate="speechRate"
-        :speed-label="speedLabel"
-        @start-practice="onStartPractice"
-        @cycle-speed="cycleSpeed"
-      >
-        <template #right>
-          <MicButton
-            :is-listening="isListening"
-            :is-supported="isSupported"
-            :speaker-name="speakerName"
-            @toggle="toggleListening"
-          />
-          <ShareButton />
-          <button
-            class="px-2.5 py-1.5 border-none rounded bg-transparent text-text text-sm font-ui cursor-pointer transition-colors leading-none hover:bg-black/5 text-lg"
-            @click="sidebarOpen = !sidebarOpen"
-            title="Toggle sidebar"
-          >
-            ☰
-          </button>
-        </template>
-      </Toolbar>
-      <InterimBanner :text="interimText" />
-      <TiptapEditor
-        v-if="activePageId"
-        :key="activePageId"
-        :ydoc="ydoc"
-        :provider="provider"
-        :fragment="currentFragment"
-        :user-name="userName"
-        :user-color="userColor"
-        @editor-ready="onEditorReady"
-      />
-      <PracticePanel
-        v-if="practiceActive"
-        :target-text="practiceTarget"
-        :results="practiceResults"
-        :has-result="practiceHasResult"
-        :is-recording="practiceRecording"
-        :interim-text="practiceInterim"
-        :score="practiceScore"
-        :total="practiceTotal"
-        :remote-practice="remotePractice"
-        :speed-label="speedLabel"
-        :recording-url="practiceRecordingUrl"
-        :is-playing-recording="practiceIsPlaying"
-        @close="closePractice"
-        @record="practiceRecord"
-        @stop-record="practiceStopRecord"
-        @try-again="practiceTryAgain"
-        @speak-target="practiceSpeakTarget(speechRate)"
-        @cycle-speed="cycleSpeed"
-        @play-recording="practicePlayRecording"
-        @stop-playback="practiceStopPlayback"
-      />
-      <div class="px-4 py-2 text-right">
-        <span class="text-xs text-text-muted">{{ statusText }}</span>
+    <div class="flex-1 flex flex-col min-w-0 h-screen">
+      <div class="shrink-0">
+        <Toolbar
+          :editor="liveEditor"
+          :speech-rate="speechRate"
+          :speed-label="speedLabel"
+          @start-practice="onStartPractice"
+          @cycle-speed="cycleSpeed"
+        >
+          <template #right>
+            <MicButton
+              :is-listening="isListening"
+              :is-supported="isSupported"
+              :speaker-name="speakerName"
+              @toggle="toggleListening"
+            />
+            <ShareButton />
+            <button
+              class="px-2.5 py-1.5 border-none rounded bg-transparent text-text text-sm font-ui cursor-pointer transition-colors leading-none hover:bg-black/5 text-lg"
+              @click="sidebarOpen = !sidebarOpen"
+              title="Toggle sidebar"
+            >
+              ☰
+            </button>
+          </template>
+        </Toolbar>
+        <InterimBanner :text="interimText" />
+      </div>
+      <div class="flex-1 overflow-y-auto">
+        <TiptapEditor
+          v-if="activePageId"
+          :key="activePageId"
+          :ydoc="ydoc"
+          :provider="provider"
+          :fragment="currentFragment"
+          :user-name="userName"
+          :user-color="userColor"
+          @editor-ready="onEditorReady"
+        />
+        <PracticePanel
+          v-if="practiceActive"
+          :target-text="practiceTarget"
+          :results="practiceResults"
+          :has-result="practiceHasResult"
+          :is-recording="practiceRecording"
+          :interim-text="practiceInterim"
+          :spoken-text="practiceSpokenText"
+          :score="practiceScore"
+          :total="practiceTotal"
+          :remote-practice="remotePractice"
+          :speed-label="speedLabel"
+          :recording-url="practiceRecordingUrl"
+          :is-playing-recording="practiceIsPlaying"
+          @close="closePractice"
+          @record="practiceRecord"
+          @stop-record="practiceStopRecord"
+          @try-again="practiceTryAgain"
+          @speak-target="practiceSpeakTarget(speechRate)"
+          @cycle-speed="cycleSpeed"
+          @play-recording="practicePlayRecording"
+          @stop-playback="practiceStopPlayback"
+        />
+        <div class="px-4 py-2 text-right">
+          <span class="text-xs text-text-muted">{{ statusText }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -142,6 +147,7 @@ const { isListening, interimText, isSupported, speakerName, toggleListening } = 
 const {
   isActive: practiceActive,
   targetText: practiceTarget,
+  spokenText: practiceSpokenText,
   isRecording: practiceRecording,
   interimText: practiceInterim,
   results: practiceResults,

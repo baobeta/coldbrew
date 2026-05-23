@@ -15,6 +15,8 @@ export interface PracticeState {
   active: boolean;
   score: number | null;
   total: number | null;
+  spokenText: string | null;
+  results: WordResult[];
   practicerName: string | null;
 }
 
@@ -292,6 +294,8 @@ export function usePractice(provider: any) {
       active: isActive.value,
       score: score.value,
       total: total.value,
+      spokenText: spokenText.value || null,
+      results: results.value,
       practicerName: null,
     };
     provider.awareness.setLocalStateField('practice', state);
