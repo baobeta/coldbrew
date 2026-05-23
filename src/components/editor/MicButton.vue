@@ -34,11 +34,13 @@ const props = defineProps({
 });
 const emit = defineEmits(['toggle']);
 
+const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+';
+
 const buttonTitle = computed(() => {
   if (!props.isSupported) return 'Voice not supported in this browser. Use Chrome or Edge.';
-  if (props.isListening) return 'Stop dictation';
+  if (props.isListening) return `Stop dictation (${mod}M)`;
   if (props.speakerName) return `${props.speakerName} is speaking`;
-  return 'Start dictation';
+  return `Start dictation (${mod}M)`;
 });
 
 function handleClick() {

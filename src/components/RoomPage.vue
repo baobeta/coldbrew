@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const SPEED_OPTIONS = [0.5, 0.75, 1];
 const SPEED_LABELS = ['0.5x', '0.75x', '1x'];
@@ -186,4 +186,19 @@ const statusText = computed(() => {
   if (connectionStatus.value === 'connecting') return 'Connecting...';
   return 'Offline';
 });
+
+function handleKeydown(e) {
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key === 'm') {
+    e.preventDefault();
+    toggleListening();
+  }
+  if (mod && e.shiftKey && e.key === 'P') {
+    e.preventDefault();
+    onStartPractice();
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', handleKeydown));
+onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
 </script>

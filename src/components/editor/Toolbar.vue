@@ -162,7 +162,7 @@
       <button
         @click="$emit('start-practice')"
         :disabled="!hasSelection"
-        title="Practice pronunciation"
+        :title="`Practice pronunciation (${mod}Shift+P)`"
         class="px-2.5 py-1.5 border-none rounded bg-transparent text-text text-sm font-ui cursor-pointer transition-colors leading-none hover:bg-black/5 disabled:opacity-30 disabled:cursor-default disabled:hover:bg-transparent"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
