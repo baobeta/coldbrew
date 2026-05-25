@@ -120,6 +120,39 @@
       </div>
       <div class="w-px h-5 bg-border mx-2" />
       <button
+        v-if="!ttsReady"
+        @click="$emit('download-voice')"
+        :disabled="ttsDownloading"
+        title="Download voice model for text-to-speech"
+        class="relative flex items-center gap-1 px-2.5 py-1.5 border-none rounded bg-transparent text-text text-sm font-ui cursor-pointer transition-colors leading-none hover:bg-black/5 disabled:cursor-default"
+        :class="{ 'animate-pulse': ttsDownloading }"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M8 2v8M5 7l3 3 3-3"
+            stroke="currentColor"
+            stroke-width="1.3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M3 11v2h10v-2"
+            stroke="currentColor"
+            stroke-width="1.3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span class="max-md:hidden">{{ ttsDownloading ? 'Downloading...' : 'Voice' }}</span>
+      </button>
+      <span
+        v-if="showReadyNotice"
+        class="text-xs text-green-600 font-ui font-medium whitespace-nowrap"
+      >
+        Voice ready!
+      </span>
+      <button
+        v-if="ttsReady"
         @click="speakSelection"
         :disabled="!hasSelection"
         title="Speak selected text"
@@ -153,6 +186,7 @@
         </svg>
       </button>
       <button
+        v-if="ttsReady"
         @click="$emit('cycle-speed')"
         title="Playback speed"
         class="px-1.5 py-1.5 border-none rounded bg-transparent text-text-muted text-xs font-ui font-medium cursor-pointer transition-colors leading-none hover:bg-black/5 min-w-8"
@@ -199,12 +233,17 @@ const mod = navigator.platform.includes('Mac') ? '⌘' : 'Ctrl+';
 const isSpeaking = ref(false);
 const hasSelection = ref(false);
 
-const emit = defineEmits(['start-practice', 'cycle-speed']);
+const emit = defineEmits(['start-practice', 'cycle-speed', 'download-voice']);
 
 const props = defineProps({
   editor: { type: Object, default: null },
   speechRate: { type: Number, default: 1 },
   speedLabel: { type: String, default: '1x' },
+  ttsSpeak: { type: Function, default: null },
+  ttsStop: { type: Function, default: null },
+  ttsReady: { type: Boolean, default: false },
+  ttsDownloading: { type: Boolean, default: false },
+  showReadyNotice: { type: Boolean, default: false },
 });
 
 function updateSelection() {
@@ -228,7 +267,7 @@ watch(
 );
 
 function speakSelection() {
-  if (!props.editor) return;
+  if (!props.editor || !props.ttsSpeak) return;
   const { from, to } = props.editor.state.selection;
   if (from === to) return;
 
@@ -236,25 +275,19 @@ function speakSelection() {
   if (!text.trim()) return;
 
   if (isSpeaking.value) {
-    speechSynthesis.cancel();
+    if (props.ttsStop) props.ttsStop();
     isSpeaking.value = false;
     return;
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = props.speechRate;
-  utterance.addEventListener('end', () => {
-    isSpeaking.value = false;
-  });
-  utterance.addEventListener('error', () => {
-    isSpeaking.value = false;
-  });
   isSpeaking.value = true;
-  speechSynthesis.speak(utterance);
+  props.ttsSpeak(text, props.speechRate).then(() => {
+    isSpeaking.value = false;
+  });
 }
 
 onUnmounted(() => {
-  speechSynthesis.cancel();
+  if (props.ttsStop) props.ttsStop();
   if (props.editor) {
     props.editor.off('selectionUpdate', updateSelection);
     props.editor.off('transaction', updateSelection);

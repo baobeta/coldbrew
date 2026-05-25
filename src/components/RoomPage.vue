@@ -19,8 +19,14 @@
           :editor="liveEditor"
           :speech-rate="speechRate"
           :speed-label="speedLabel"
+          :tts-speak="piperTTS.speak"
+          :tts-stop="piperTTS.stop"
+          :tts-ready="piperTTS.isReady.value"
+          :tts-downloading="piperTTS.isDownloading.value"
+          :show-ready-notice="piperTTS.showReadyNotice.value"
           @start-practice="onStartPractice"
           @cycle-speed="cycleSpeed"
+          @download-voice="piperTTS.download"
         >
           <template #right>
             <MicButton
@@ -66,11 +72,14 @@
           :speed-label="speedLabel"
           :recording-url="practiceRecordingUrl"
           :is-playing-recording="practiceIsPlaying"
+          :tts-ready="piperTTS.isReady.value"
+          :tts-speaking="piperTTS.isSpeaking.value"
           @close="closePractice"
           @record="practiceRecord"
           @stop-record="practiceStopRecord"
           @try-again="practiceTryAgain"
           @speak-target="practiceSpeakTarget(speechRate)"
+          @stop-speaking="piperTTS.stop"
           @cycle-speed="cycleSpeed"
           @play-recording="practicePlayRecording"
           @stop-playback="practiceStopPlayback"
@@ -105,6 +114,7 @@ import { useCollaboration } from '@/composables/useCollaboration';
 import { useFileTree } from '@/composables/useFileTree';
 import { useVoiceCapture } from '@/composables/useVoiceCapture';
 import { usePractice } from '@/composables/usePractice';
+import { usePiperTTS } from '@/composables/usePiperTTS';
 
 const props = defineProps({
   roomId: { type: String, required: true },
@@ -144,6 +154,8 @@ const { isListening, interimText, isSupported, speakerName, toggleListening } = 
   () => liveEditor.value,
 );
 
+const piperTTS = usePiperTTS();
+
 const {
   isActive: practiceActive,
   targetText: practiceTarget,
@@ -165,7 +177,7 @@ const {
   speakTarget: practiceSpeakTarget,
   playRecording: practicePlayRecording,
   stopPlayback: practiceStopPlayback,
-} = usePractice(provider);
+} = usePractice(provider, piperTTS);
 
 function onStartPractice() {
   if (!liveEditor.value) return;

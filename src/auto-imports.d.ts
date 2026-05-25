@@ -67,6 +67,7 @@ declare global {
   const useFileTree: typeof import('./composables/useFileTree').useFileTree
   const useId: typeof import('vue').useId
   const useModel: typeof import('vue').useModel
+  const usePiperTTS: typeof import('./composables/usePiperTTS').usePiperTTS
   const usePractice: typeof import('./composables/usePractice').usePractice
   const useSlots: typeof import('vue').useSlots
   const useTemplateRef: typeof import('vue').useTemplateRef
@@ -152,6 +153,7 @@ declare module 'vue' {
     readonly useFileTree: UnwrapRef<typeof import('./composables/useFileTree')['useFileTree']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
+    readonly usePiperTTS: UnwrapRef<typeof import('./composables/usePiperTTS')['usePiperTTS']>
     readonly usePractice: UnwrapRef<typeof import('./composables/usePractice')['usePractice']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>

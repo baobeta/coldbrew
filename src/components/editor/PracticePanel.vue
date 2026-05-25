@@ -176,33 +176,56 @@
           {{ isPlayingRecording ? 'Stop' : 'My Voice' }}
         </button>
         <button
-          @click="$emit('speak-target')"
-          class="flex items-center gap-1.5 px-4 py-2 text-sm font-ui font-medium text-text bg-white border border-border rounded-lg cursor-pointer transition-colors hover:bg-black/5"
+          @click="ttsSpeaking ? $emit('stop-speaking') : $emit('speak-target')"
+          :disabled="!ttsReady"
+          :title="
+            ttsReady
+              ? ttsSpeaking
+                ? 'Stop speaking'
+                : 'Listen to target text'
+              : 'Download voice from toolbar first'
+          "
+          class="flex items-center gap-1.5 px-4 py-2 text-sm font-ui font-medium text-text bg-white border border-border rounded-lg cursor-pointer transition-colors hover:bg-black/5 disabled:opacity-30 disabled:cursor-default"
+          :class="{ 'border-accent text-accent': ttsSpeaking }"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path
-              d="M1.5 5v4h2.5l3.5 2.5V2.5L4 5H1.5z"
-              stroke="currentColor"
-              stroke-width="1.2"
-              fill="none"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M9.5 4.5a2.5 2.5 0 0 1 0 5"
-              stroke="currentColor"
-              stroke-width="1.2"
-              stroke-linecap="round"
-              fill="none"
-            />
-            <path
-              d="M11 3a5 5 0 0 1 0 8"
-              stroke="currentColor"
-              stroke-width="1.2"
-              stroke-linecap="round"
-              fill="none"
-            />
+            <template v-if="!ttsSpeaking">
+              <path
+                d="M1.5 5v4h2.5l3.5 2.5V2.5L4 5H1.5z"
+                stroke="currentColor"
+                stroke-width="1.2"
+                fill="none"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9.5 4.5a2.5 2.5 0 0 1 0 5"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                fill="none"
+              />
+              <path
+                d="M11 3a5 5 0 0 1 0 8"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                fill="none"
+              />
+            </template>
+            <template v-else>
+              <rect
+                x="3"
+                y="3"
+                width="8"
+                height="8"
+                rx="1"
+                stroke="currentColor"
+                stroke-width="1.2"
+                fill="currentColor"
+              />
+            </template>
           </svg>
-          Listen
+          {{ ttsSpeaking ? 'Stop' : 'Listen' }}
         </button>
         <button
           @click="$emit('cycle-speed')"
@@ -230,6 +253,8 @@ defineProps({
   speedLabel: { type: String, default: '1x' },
   recordingUrl: { type: String, default: null },
   isPlayingRecording: { type: Boolean, default: false },
+  ttsReady: { type: Boolean, default: false },
+  ttsSpeaking: { type: Boolean, default: false },
 });
 
 defineEmits([
@@ -238,6 +263,7 @@ defineEmits([
   'stop-record',
   'try-again',
   'speak-target',
+  'stop-speaking',
   'cycle-speed',
   'play-recording',
   'stop-playback',

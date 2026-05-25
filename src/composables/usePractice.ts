@@ -91,7 +91,10 @@ export function compareWords(expected: string[], actual: string[]): WordResult[]
   return results;
 }
 
-export function usePractice(provider: any) {
+export function usePractice(
+  provider: any,
+  tts?: { speak: (text: string, rate?: number) => Promise<void>; stop: () => void },
+) {
   const isActive = ref(false);
   const targetText = ref('');
   const spokenText = ref('');
@@ -286,10 +289,14 @@ export function usePractice(provider: any) {
 
   function speakTarget(rate: number = 1) {
     if (!targetText.value) return;
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(targetText.value);
-    utterance.rate = rate;
-    speechSynthesis.speak(utterance);
+    if (tts) {
+      tts.speak(targetText.value, rate);
+    } else {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(targetText.value);
+      utterance.rate = rate;
+      speechSynthesis.speak(utterance);
+    }
   }
 
   function broadcastState() {
@@ -338,7 +345,11 @@ export function usePractice(provider: any) {
   onUnmounted(() => {
     stopRecording();
     revokeRecordingUrl();
-    speechSynthesis.cancel();
+    if (tts) {
+      tts.stop();
+    } else {
+      speechSynthesis.cancel();
+    }
     provider.awareness.off('change', syncRemotePractice);
   });
 
