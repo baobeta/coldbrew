@@ -124,7 +124,7 @@ export function usePractice(provider: any) {
 
   if (SpeechRecognition) {
     recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -140,19 +140,17 @@ export function usePractice(provider: any) {
         }
       }
 
-      if (finalTranscript) {
-        spokenText.value = finalTranscript.trim();
-        interimText.value = '';
-        evaluateResult();
-      } else {
-        interimText.value = interim;
-      }
+      spokenText.value = finalTranscript.trim();
+      interimText.value = interim;
     });
 
     recognition.addEventListener('end', () => {
-      isRecording.value = false;
-      if (!hasResult.value && spokenText.value) {
-        evaluateResult();
+      if (isRecording.value) {
+        if (spokenText.value) {
+          evaluateResult();
+        } else {
+          isRecording.value = false;
+        }
       }
     });
 
@@ -217,7 +215,6 @@ export function usePractice(provider: any) {
   }
 
   function stopRecording() {
-    isRecording.value = false;
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
     }
@@ -225,6 +222,10 @@ export function usePractice(provider: any) {
       try {
         recognition.stop();
       } catch {}
+    }
+    isRecording.value = false;
+    if (spokenText.value && !hasResult.value) {
+      evaluateResult();
     }
   }
 
