@@ -102,6 +102,7 @@ export function usePractice(provider: any) {
   const recordingUrl = ref<string | null>(null);
   const isPlayingRecording = ref(false);
 
+  let isLocalSession = false;
   let mediaRecorder: MediaRecorder | null = null;
   let audioChunks: Blob[] = [];
   let audioElement: HTMLAudioElement | null = null;
@@ -177,6 +178,7 @@ export function usePractice(provider: any) {
   }
 
   function startPractice(text: string) {
+    isLocalSession = true;
     targetText.value = text;
     spokenText.value = '';
     interimText.value = '';
@@ -269,6 +271,7 @@ export function usePractice(provider: any) {
   }
 
   function closePractice() {
+    isLocalSession = false;
     stopRecording();
     revokeRecordingUrl();
     isActive.value = false;
@@ -322,8 +325,10 @@ export function usePractice(provider: any) {
       }
     }
 
-    if (!isActive.value) {
-      remotePractice.value = null;
+    remotePractice.value = null;
+    if (isActive.value && !isLocalSession) {
+      isActive.value = false;
+      targetText.value = '';
     }
   }
 
