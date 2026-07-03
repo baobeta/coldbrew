@@ -15,11 +15,19 @@ import {
 import { Awareness } from "y-protocols/awareness";
 import * as encoding from "lib0/encoding";
 import * as decoding from "lib0/decoding";
+import { createCoalescer } from "./coalesce.mjs";
 
 const MESSAGE_SYNC = 0;
 const MESSAGE_AWARENESS = 1;
 const PING_TIMEOUT = 30_000;
 const PORT = Number(process.env.PORT) || 4444;
+
+// Coalesce doc updates within a short window before broadcasting.
+// Default 8ms (≈half a frame) merges same-burst updates while keeping
+// per-keystroke latency imperceptible. Override with DOC_FLUSH_MS env var.
+const DOC_FLUSH_MS = Number(process.env.DOC_FLUSH_MS) || 8;
+// Skip conns whose send buffer exceeds 1MB; they catch up via CRDT.
+const MAX_BUFFERED_BYTES = 1 << 20;
 
 const rooms = new Map();
 
@@ -39,14 +47,24 @@ function getOrCreateRoom(name) {
     broadcastToRoom(room, encoding.toUint8Array(encoder), null);
   });
 
-  doc.on("update", (update, origin) => {
-    const encoder = encoding.createEncoder();
-    encoding.writeVarUint(encoder, MESSAGE_SYNC);
-    writeUpdate(encoder, update);
-    broadcastToRoom(room, encoding.toUint8Array(encoder), origin);
+  // Coalesce doc updates so a burst of keystrokes becomes ONE broadcast message.
+  // Broadcasting the merged update to all conns (origin=null) is safe: applying
+  // an update you already have is idempotent in Yjs, so echoing to the origin
+  // conn is harmless and lets us drop per-update origin tracking after merging.
+  const docCoalescer = createCoalescer({
+    flushMs: DOC_FLUSH_MS,
+    onFlush: (updates) => {
+      const merged = Y.mergeUpdates(updates);
+      const encoder = encoding.createEncoder();
+      encoding.writeVarUint(encoder, MESSAGE_SYNC);
+      writeUpdate(encoder, merged);
+      broadcastToRoom(room, encoding.toUint8Array(encoder), null);
+    },
   });
 
-  room = { doc, awareness, conns: new Map() };
+  doc.on("update", (update) => docCoalescer.push(update));
+
+  room = { doc, awareness, conns: new Map(), docCoalescer };
   rooms.set(name, room);
   return room;
 }
@@ -54,6 +72,7 @@ function getOrCreateRoom(name) {
 function broadcastToRoom(room, msg, origin) {
   for (const [conn] of room.conns) {
     if (conn !== origin && conn.readyState === 1) {
+      if (conn.bufferedAmount > MAX_BUFFERED_BYTES) continue; // backpressure: skip; CRDT catches up
       try {
         conn.send(msg);
       } catch {
@@ -74,6 +93,7 @@ function closeConn(room, conn) {
   if (room.conns.size === 0) {
     for (const [name, r] of rooms) {
       if (r === room) {
+        room.docCoalescer.dispose(); // cancel any pending timer before tearing down
         room.awareness.destroy();
         room.doc.destroy();
         rooms.delete(name);

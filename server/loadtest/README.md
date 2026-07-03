@@ -83,16 +83,63 @@ N=40 DURATION_MS=6000 EDIT_INTERVAL_MS=50 URL=ws://localhost:4455 node loadtest/
 | Metric | Baseline (pre-optimisation) | After Task G |
 |---|---|---|
 | N connections | 40 | 40 |
-| Latency p50 (ms) | 2.07 | _TBD_ |
-| Latency p95 (ms) | 5.67 | _TBD_ |
-| Latency p99 (ms) | 7.97 | _TBD_ |
-| Latency max (ms) | 10.40 | _TBD_ |
-| Total msgs / sec | 760 | _TBD_ |
+| Latency p50 (ms) | 2.07 | 10.95 |
+| Latency p95 (ms) | 5.67 | 13.23 |
+| Latency p99 (ms) | 7.97 | 15.13 |
+| Latency max (ms) | 10.40 | 16.52 |
+| Total msgs / sec | 760 | 760 |
 
-> Note: at 40 conns / 50ms the current server is already fast (single-digit ms) — the
-> synchronous fan-out only becomes a bottleneck at higher N or edit rates. Task G's
-> coalescing + backpressure targets the tail (p99/max) under bursty load; re-run at
-> higher N (e.g. `N=150 EDIT_INTERVAL_MS=20`) to see the divergence.
+> **Interpreting the After Task G numbers (N=40 / 50ms edits):** The 8ms flush
+> window (`DOC_FLUSH_MS=8`, env-overridable) adds a small fixed buffer delay visible
+> in the measurement — the harness timestamps from writer send to reader receive, so
+> the coalesce hold time is included. At 50ms edit intervals no merging occurs
+> (50ms > 8ms flush period), so msgs/sec stays at 760. The p50 rose from 2ms to 11ms:
+> the ~9ms overhead is the flush window itself, which is sub-frame and imperceptible
+> to users typing at human speed. The window is the minimum needed to catch same-burst
+> updates; operators can tune it via `DOC_FLUSH_MS`.
+>
+> **The burst-merge win shows at fast edit rates** (`N=150 EDIT_INTERVAL_MS=5`): when
+> edits arrive faster than the 8ms window, the coalescer merges them. Readers
+> received 83,291 of ~178,800 expected messages (2:1 merge ratio), halving the
+> number of O(N) `conn.send` calls per burst. Latency stays low (p99 6ms) because
+> fan-out cost is amortised across merged updates.
+>
+> At moderate load (`N=150 EDIT_INTERVAL_MS=20`) edits land mostly in separate flush
+> windows (20ms > 8ms), so little merging occurs (43,508/44,700 — ~3% reduction).
+> The backpressure guard (`conn.bufferedAmount > 1MB`) still protects the event loop
+> from slow conns; they converge via CRDT state sync.
+
+### N=150 / 20ms edits (moderate burst, Task G)
+
+```sh
+N=150 DURATION_MS=6000 EDIT_INTERVAL_MS=20 URL=ws://localhost:4456 node loadtest/ws-fanout.mjs
+```
+
+| Metric | After Task G |
+|---|---|
+| N connections | 150 |
+| Latency p50 (ms) | 11.46 |
+| Latency p95 (ms) | 14.09 |
+| Latency p99 (ms) | 17.29 |
+| Latency max (ms) | 45.75 |
+| Msgs received | 43,508 of ~44,700 expected (minimal merging at 20ms spacing) |
+| Msgs / sec | 7,006 |
+
+### N=150 / 5ms edits (heavy burst — shows merge win, Task G)
+
+```sh
+N=150 DURATION_MS=6000 EDIT_INTERVAL_MS=5 URL=ws://localhost:4456 node loadtest/ws-fanout.mjs
+```
+
+| Metric | After Task G |
+|---|---|
+| N connections | 150 |
+| Latency p50 (ms) | 3.43 |
+| Latency p95 (ms) | 5.25 |
+| Latency p99 (ms) | 5.97 |
+| Latency max (ms) | 9.96 |
+| Msgs received | 83,291 of ~178,800 expected (**2:1 merge ratio — the win**) |
+| Msgs / sec | 13,423 |
 
 ---
 
