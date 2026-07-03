@@ -28,3 +28,4 @@ dist-ssr
 .writeboard-db
 .smoke-db
 .test-db*
+.omx/
