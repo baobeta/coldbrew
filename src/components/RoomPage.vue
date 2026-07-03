@@ -58,9 +58,9 @@
         <TiptapEditor
           v-if="activePageId"
           :key="activePageId"
-          :ydoc="ydoc"
-          :provider="provider"
-          :fragment="currentFragment"
+          :ydoc="currentPage?.ydoc"
+          :provider="currentPage?.provider"
+          :fragment="currentPage?.fragment"
           :user-name="userName"
           :user-color="userColor"
           @editor-ready="onEditorReady"
@@ -119,6 +119,7 @@ import InterimBanner from '@/components/editor/InterimBanner.vue';
 import PracticePanel from '@/components/editor/PracticePanel.vue';
 import { useCollaboration } from '@/composables/useCollaboration';
 import { useFileTree } from '@/composables/useFileTree';
+import { usePageDocs } from '@/composables/usePageDocs';
 import { useVoiceCapture } from '@/composables/useVoiceCapture';
 import { usePractice } from '@/composables/usePractice';
 import { usePiperTTS } from '@/composables/usePiperTTS';
@@ -152,13 +153,13 @@ const {
   moveNode,
   setActivePage,
   toggleFolder,
-  getFragment,
 } = useFileTree(ydoc, provider, props.initialPageId);
 
-const currentFragment = computed(() => {
-  if (!activePageId.value) return null;
-  return getFragment(activePageId.value);
-});
+const pageDocs = usePageDocs(props.roomId);
+
+const currentPage = computed(() =>
+  activePageId.value ? pageDocs.openPage(activePageId.value) : null,
+);
 
 function onEditorReady(editor) {
   liveEditor.value = editor;

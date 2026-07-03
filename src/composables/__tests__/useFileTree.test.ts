@@ -141,10 +141,9 @@ describe('useFileTree', () => {
     expect(fileTree.expandedFolders.value.has(folderId)).toBe(true);
   });
 
-  it('returns an XmlFragment for a page', () => {
-    const id = fileTree.createPage('Test');
-    const fragment = fileTree.getFragment(id);
-    expect(fragment).toBeTruthy();
+  it('does not create a page fragment in the tree doc', () => {
+    const id = fileTree.createPage('P');
+    expect(ydoc.share.has(`page-${id}`)).toBe(false);
   });
 
   it('sets active page on creation', () => {

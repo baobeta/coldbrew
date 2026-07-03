@@ -98,7 +98,6 @@ export function useFileTree(
       nodeMap.set('parentId', parentId);
       nodesMap.set(id, nodeMap);
 
-      ydoc.getXmlFragment(`page-${id}`);
       getParentArray(parentId).push([id]);
     });
 
@@ -237,10 +236,6 @@ export function useFileTree(
     expandedFolders.value = s;
   }
 
-  function getFragment(id: string): Y.XmlFragment {
-    return ydoc.getXmlFragment(`page-${id}`);
-  }
-
   function broadcastActivePage(id: string | null): void {
     provider.awareness.setLocalStateField('activePage', id);
   }
@@ -338,7 +333,6 @@ export function useFileTree(
     moveNode,
     setActivePage,
     toggleFolder,
-    getFragment,
     __stats,
   };
 }
