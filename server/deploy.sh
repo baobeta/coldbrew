@@ -3,11 +3,18 @@ set -e
 
 VPS="root@160.22.161.36"
 REMOTE_DIR="~/coldbrew-sync"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+ssh "$VPS" "mkdir -p $REMOTE_DIR"
 
 echo "==> Syncing server files..."
 rsync -avz \
-  server/main.mjs \
-  server/package.json \
+  "$SCRIPT_DIR/main.mjs" \
+  "$SCRIPT_DIR/coalesce.mjs" \
+  "$SCRIPT_DIR/persistence.mjs" \
+  "$SCRIPT_DIR/migrate.mjs" \
+  "$SCRIPT_DIR/package.json" \
+  "$SCRIPT_DIR/package-lock.json" \
   "$VPS:$REMOTE_DIR/"
 
 echo "==> Installing dependencies & restarting service..."
@@ -20,7 +27,7 @@ ssh "$VPS" << 'EOF'
     apt-get install -y nodejs
   fi
 
-  npm install --production
+  npm ci --omit=dev
 
   # Create systemd service
   cat > /etc/systemd/system/coldbrew-sync.service << 'SERVICE'
