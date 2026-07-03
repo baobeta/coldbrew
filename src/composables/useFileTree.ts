@@ -1,4 +1,4 @@
-import { ref, onUnmounted } from 'vue';
+import { ref, reactive, onUnmounted } from 'vue';
 import * as Y from 'yjs';
 import { nanoid } from 'nanoid';
 import type { TreeNode } from '@/types';
@@ -39,6 +39,7 @@ export function useFileTree(
   const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes');
   const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren');
   const __stats = { buildCount: 0, syncCount: 0 };
+  const nodeCache = new Map<string, TreeNode>();
 
   function getChildrenArray(folderId: string): Y.Array<string> {
     return ydoc.getArray(`children:${folderId}`);
@@ -53,22 +54,24 @@ export function useFileTree(
     const nodeMap = nodesMap.get(nodeId);
     if (!nodeMap) return null;
 
-    const node: TreeNode = {
+    const node: TreeNode = reactive({
       id: nodeMap.get('id') as string,
       type: nodeMap.get('type') as 'page' | 'folder',
       title: nodeMap.get('title') as string,
-    };
+    }) as TreeNode;
 
     if (node.type === 'folder') {
       const childArr = getChildrenArray(nodeId);
       node.children = childArr.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[];
     }
 
+    nodeCache.set(nodeId, node);
     return node;
   }
 
   function syncTree(): void {
     __stats.syncCount++;
+    nodeCache.clear();
     tree.value = rootChildren.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[];
   }
 
@@ -244,7 +247,30 @@ export function useFileTree(
 
   // Observe changes — use deep observer on nodesMap + observer on rootChildren
   const syncHandler = () => scheduleSync();
-  nodesMap.observeDeep(syncHandler);
+
+  function onNodesDeep(events: Y.YEvent<any>[]): void {
+    let structural = false;
+    for (const ev of events) {
+      // A change to a node's OWN Y.Map fields (target is a child map, not nodesMap itself)
+      if (ev instanceof Y.YMapEvent && ev.target !== nodesMap) {
+        const changed = ev.target as Y.Map<any>;
+        const id = changed.get('id') as string;
+        const cached = nodeCache.get(id);
+        // Surgical path ONLY for a pure title change on a cached, currently-rendered node
+        if (cached && ev.keysChanged.size === 1 && ev.keysChanged.has('title')) {
+          cached.title = changed.get('title') as string; // reactive in-place update
+          continue;
+        }
+        structural = true;
+      } else {
+        // membership change on nodesMap itself (add/remove node), or anything else
+        structural = true;
+      }
+    }
+    if (structural) scheduleSync();
+  }
+
+  nodesMap.observeDeep(onNodesDeep);
   rootChildren.observe(syncHandler);
 
   // Also observe all folder children arrays
@@ -294,7 +320,7 @@ export function useFileTree(
   initDefaultPage();
 
   onUnmounted(() => {
-    nodesMap.unobserveDeep(syncHandler);
+    nodesMap.unobserveDeep(onNodesDeep);
     rootChildren.unobserve(syncHandler);
     for (const [, childArr] of folderObservers) {
       childArr.unobserve(syncHandler);
