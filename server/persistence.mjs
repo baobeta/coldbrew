@@ -48,6 +48,24 @@ export async function storeRoom(roomName, doc) {
 }
 
 /**
+ * Force-flush a room to LevelDB and verify by reading it back into a fresh doc.
+ * Returns the freshly-loaded Y.Doc so callers can compare content.
+ *
+ * @param {string} roomName
+ * @param {Y.Doc} doc
+ * @returns {Promise<Y.Doc>}
+ */
+export async function flushAndReload(roomName, doc) {
+  const db = getLdb();
+  await db.storeUpdate(roomName, Y.encodeStateAsUpdate(doc));
+  await db.flushDocument(roomName); // force compaction/durability
+  const check = new Y.Doc();
+  const persisted = await db.getYDoc(roomName);
+  Y.applyUpdate(check, Y.encodeStateAsUpdate(persisted));
+  return check;
+}
+
+/**
  * Flush and close the DB. Best-effort; called on graceful shutdown.
  */
 export async function closePersistence() {

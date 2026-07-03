@@ -16,7 +16,8 @@ import { Awareness } from "y-protocols/awareness";
 import * as encoding from "lib0/encoding";
 import * as decoding from "lib0/decoding";
 import { createCoalescer } from "./coalesce.mjs";
-import { loadRoom, storeRoom, closePersistence } from "./persistence.mjs";
+import { loadRoom, storeRoom, closePersistence, flushAndReload } from "./persistence.mjs";
+import { migrateRoom } from "./migrate.mjs";
 
 const MESSAGE_SYNC = 0;
 const MESSAGE_AWARENESS = 1;
@@ -36,6 +37,17 @@ const MAX_WARM_ROOMS = Number(process.env.MAX_WARM_ROOMS) || 100;
 const STORE_DEBOUNCE_MS = Number(process.env.STORE_DEBOUNCE_MS) || 2000;
 
 const rooms = new Map();
+
+/**
+ * Extract the board/room ID from a tree room name ("writeboard-<roomId>").
+ * Page rooms ("writeboard-<roomId>--page--<pageId>") are never passed here.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+function roomIdFromName(name) {
+  return name.replace(/^writeboard-/, '');
+}
 
 /**
  * Move the room entry to the end of the Map (most-recently-used).
@@ -284,6 +296,39 @@ async function onConnection(conn, roomName) {
     alive = true;
     handleMessage(room, conn, new Uint8Array(data));
   });
+
+  // On first load of a TREE room (not a page room), migrate legacy page-<id>
+  // fragments into per-page rooms with a verify-then-delete durability gate.
+  // Page rooms use the `--page--` delimiter (never present in roomIds), so
+  // classification by !roomName.includes('--page--') is unambiguous.
+  // Wrapped in .catch so a migration error never blocks the client connection.
+  if (!roomName.includes('--page--')) {
+    migrateRoom(roomIdFromName(roomName), room.doc, {
+      // getPageDoc is async: await the page room's loaded promise BEFORE
+      // returning the doc so that any pre-existing LevelDB state is applied
+      // before migratePageFragment inspects the target fragment. This ensures
+      // the `target.length > 0` duplication guard in migratePageFragment can
+      // see already-migrated content and skip re-migration safely.
+      getPageDoc: async (pageRoom) => {
+        const pr = getOrCreateRoom(pageRoom);
+        await pr.loaded;
+        return pr.doc;
+      },
+      persistAndVerify: async (pageRoom, pageDoc) => {
+        // flushAndReload writes to LevelDB, compacts, then reads back into
+        // a fresh doc — if content round-trips, persistence is confirmed.
+        const reloaded = await flushAndReload(pageRoom, pageDoc);
+        const reloadedContent = reloaded.getXmlFragment('content');
+        const sourceContent = pageDoc.getXmlFragment('content');
+        const verified = (
+          reloadedContent.length > 0 &&
+          reloadedContent.toJSON() === sourceContent.toJSON()
+        );
+        reloaded.destroy(); // free the throwaway verify doc (LOW fix)
+        return verified;
+      },
+    }).catch((err) => console.error('[migrate] room migration failed', roomName, err));
+  }
 
   {
     const encoder = encoding.createEncoder();

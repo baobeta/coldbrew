@@ -35,7 +35,7 @@ describe('usePageDocs', () => {
     expect(ydoc).toBeTruthy();
     expect(fragment).toBeTruthy();
     expect(provider).toBeTruthy();
-    expect(providers).toContain('writeboard-room1-p-pageA');
+    expect(providers).toContain('writeboard-room1--page--pageA');
   });
 
   it('reuses the same provider on cache hit (no new connection)', () => {
@@ -44,7 +44,7 @@ describe('usePageDocs', () => {
     const first = pages.openPage('p1');
     const second = pages.openPage('p1');
     expect(second.ydoc).toBe(first.ydoc);
-    expect(providers.filter((r) => r === 'writeboard-room2-p-p1').length).toBe(1);
+    expect(providers.filter((r) => r === 'writeboard-room2--page--p1').length).toBe(1);
   });
 
   it('evicts the least-recently-used page beyond the cap', () => {

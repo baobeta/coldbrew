@@ -28,9 +28,9 @@ export function usePageDocs(roomId: string) {
       return existing;
     }
     const ydoc = new Y.Doc();
-    const room = `writeboard-${roomId}-p-${pageId}`;
+    const room = `writeboard-${roomId}--page--${pageId}`;
     const provider = new WebsocketProvider(config.websocketServer, room, ydoc);
-    const indexeddb = new IndexeddbPersistence(`writeboard-doc-${roomId}-p-${pageId}`, ydoc);
+    const indexeddb = new IndexeddbPersistence(`writeboard-doc-${roomId}--page--${pageId}`, ydoc);
     const fragment = ydoc.getXmlFragment('content');
     const entry: Entry = { ydoc, provider, indexeddb, fragment, lastUsed: ++clock };
     cache.set(pageId, entry);
