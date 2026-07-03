@@ -2,7 +2,7 @@
   <li :class="{ 'is-active': node.type === 'page' && node.id === activePageId }">
     <div
       data-test="tree-row"
-      class="flex items-center gap-0.5 px-2 py-[3px] cursor-pointer text-[0.82rem] text-text rounded mx-1 my-px transition-colors select-none h-[26px] hover:bg-black/5"
+      class="flex items-center gap-0.5 px-2 py-[3px] cursor-pointer text-[0.82rem] text-text rounded mx-1 transition-colors select-none h-[26px] hover:bg-black/5"
       :class="{
         'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]':
           node.type === 'page' && node.id === activePageId,
@@ -96,7 +96,7 @@
     </div>
 
     <ul
-      v-if="node.type === 'folder' && isExpanded && node.children?.length"
+      v-if="node.type === 'folder' && isExpanded && node.children?.length && !flat"
       class="list-none p-0 m-0"
     >
       <TreeNode
@@ -128,6 +128,7 @@ const props = defineProps({
   activePageId: { type: String, default: null },
   isExpanded: { type: Boolean, default: false },
   expandedFolders: { type: Set, default: () => new Set() },
+  flat: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([

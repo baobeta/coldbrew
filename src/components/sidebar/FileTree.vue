@@ -1,23 +1,32 @@
 <template>
-  <div class="flex-1 overflow-y-auto py-0.5">
-    <ul class="list-none p-0 m-0" v-if="tree.length">
-      <TreeNode
-        v-for="node in tree"
-        :key="node.id"
-        :node="node"
-        :depth="0"
-        :active-page-id="activePageId"
-        :is-expanded="expandedFolders.has(node.id)"
-        :expanded-folders="expandedFolders"
-        @select-page="$emit('select-page', $event)"
-        @toggle-folder="$emit('toggle-folder', $event)"
-        @rename="$emit('rename', $event)"
-        @delete="$emit('delete', $event)"
-        @create-page="$emit('create-page', $event)"
-        @create-folder="$emit('create-folder', $event)"
-        @open-context-menu="contextMenu = $event"
-      />
-    </ul>
+  <div class="flex-1 flex flex-col min-h-0">
+    <div
+      v-if="tree.length"
+      data-test="file-tree-container"
+      class="flex-1 min-h-0 py-0.5"
+      v-bind="containerProps"
+      @scroll="hideContextMenu"
+    >
+      <div v-bind="wrapperProps">
+        <TreeNode
+          v-for="{ data: row } in list"
+          :key="row.node.id"
+          :node="row.node"
+          :depth="row.depth"
+          :flat="true"
+          :active-page-id="activePageId"
+          :is-expanded="expandedFolders.has(row.node.id)"
+          :expanded-folders="expandedFolders"
+          @select-page="$emit('select-page', $event)"
+          @toggle-folder="$emit('toggle-folder', $event)"
+          @rename="$emit('rename', $event)"
+          @delete="$emit('delete', $event)"
+          @create-page="$emit('create-page', $event)"
+          @create-folder="$emit('create-folder', $event)"
+          @open-context-menu="contextMenu = $event"
+        />
+      </div>
+    </div>
     <div v-else class="p-6 text-center text-[0.82rem] text-text-light">No pages yet</div>
 
     <div
@@ -120,10 +129,12 @@
 </template>
 
 <script setup>
-import { ref, provide, onMounted, onUnmounted } from 'vue';
+import { ref, computed, provide, onMounted, onUnmounted } from 'vue';
+import { useVirtualList } from '@vueuse/core';
 import TreeNode from './TreeNode.vue';
+import { flattenTree } from '@/composables/useFlattenedTree';
 
-defineProps({
+const props = defineProps({
   tree: { type: Array, required: true },
   activePageId: { type: String, default: null },
   expandedFolders: { type: Set, default: () => new Set() },
@@ -137,6 +148,16 @@ const emit = defineEmits([
   'create-page',
   'create-folder',
 ]);
+
+// Flat ordered list of all visible rows — recomputed on expand/collapse
+const flatRows = computed(() => flattenTree(props.tree, props.expandedFolders));
+
+// itemHeight: the row <div> is h-[26px] with no vertical margin (my-px removed).
+// Tailwind Preflight zeroes <li> margin/padding, so each row is exactly 26px.
+const { list, containerProps, wrapperProps } = useVirtualList(flatRows, {
+  itemHeight: 26,
+  overscan: 10,
+});
 
 const contextMenu = ref(null);
 
