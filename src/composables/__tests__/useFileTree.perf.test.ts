@@ -30,11 +30,25 @@ describe('useFileTree perf', () => {
     expect(typeof ft.__stats.buildCount).toBe('number');
   });
 
-  it('counts node builds during a rename (baseline)', () => {
+  it('counts node builds during a rename (baseline)', async () => {
     const ids = Array.from({ length: 10 }, (_, i) => ft.createPage(`P${i}`));
+    await new Promise((r) => requestAnimationFrame(() => r(null)));
     const before = ft.__stats.buildCount;
     ft.rename(ids[0], 'Renamed');
+    await new Promise((r) => requestAnimationFrame(() => r(null)));
     const delta = ft.__stats.buildCount - before;
     expect(delta).toBeGreaterThan(0);
+  });
+
+  it('coalesces multiple edits in one tick into a single rebuild', async () => {
+    const before = ft.__stats.syncCount ?? 0;
+    ydoc.transact(() => {
+      ft.createPage('X');
+      ft.createPage('Y');
+      ft.createPage('Z');
+    });
+    await new Promise((r) => requestAnimationFrame(() => r(null)));
+    const delta = (ft.__stats.syncCount ?? 0) - before;
+    expect(delta).toBe(1); // one coalesced rebuild, not three
   });
 });

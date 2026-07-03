@@ -38,7 +38,7 @@ export function useFileTree(
 
   const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes');
   const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren');
-  const __stats = { buildCount: 0 };
+  const __stats = { buildCount: 0, syncCount: 0 };
 
   function getChildrenArray(folderId: string): Y.Array<string> {
     return ydoc.getArray(`children:${folderId}`);
@@ -68,7 +68,20 @@ export function useFileTree(
   }
 
   function syncTree(): void {
+    __stats.syncCount++;
     tree.value = rootChildren.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[];
+  }
+
+  let syncScheduled = false;
+  function scheduleSync(): void {
+    if (syncScheduled) return;
+    syncScheduled = true;
+    const run = () => {
+      syncScheduled = false;
+      syncTree();
+    };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
+    else queueMicrotask(run);
   }
 
   function createPage(title = 'Untitled', parentId: string | null = null): string {
@@ -230,7 +243,7 @@ export function useFileTree(
   }
 
   // Observe changes — use deep observer on nodesMap + observer on rootChildren
-  const syncHandler = () => syncTree();
+  const syncHandler = () => scheduleSync();
   nodesMap.observeDeep(syncHandler);
   rootChildren.observe(syncHandler);
 
@@ -249,7 +262,7 @@ export function useFileTree(
 
   nodesMap.observe(() => {
     observeFolderChildren();
-    syncTree();
+    scheduleSync();
   });
 
   // Initialize
@@ -262,7 +275,7 @@ export function useFileTree(
   }
 
   function initDefaultPage(): void {
-    if (tree.value.length === 0) {
+    if (rootChildren.length === 0) {
       createPage('Untitled');
     } else if (!activePageId.value) {
       const targetPage =
