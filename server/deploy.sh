@@ -44,7 +44,9 @@ SERVICE
   systemctl enable coldbrew-sync
   systemctl restart coldbrew-sync
 
-  # Add Caddy reverse proxy (if not already present)
+  # Add Caddy reverse proxy (if not already present).
+  # NOTE: This configures a single upstream on :4444. For multi-instance
+  # horizontal scaling (sticky-by-room routing), see server/SCALING.md §2.
   if ! grep -q "coldbrew-api.brianle.dev" /etc/caddy/Caddyfile; then
     cat >> /etc/caddy/Caddyfile << 'CADDY'
 
