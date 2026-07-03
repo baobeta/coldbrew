@@ -26,4 +26,5 @@ export interface CollaborationReturn {
   peerCount: Ref<number>;
   participants: Ref<Participant[]>;
   connectionStatus: Ref<ConnectionStatus>;
+  persistenceError: Ref<boolean>;
 }

@@ -1,3 +1,4 @@
+import { ref, type Ref } from 'vue';
 import * as Y from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { config } from '@/config';
@@ -10,9 +11,21 @@ export function setStoredUserName(name: string): void {
   localStorage.setItem('writeboard-username', name);
 }
 
-export function useDocPersistence(ydoc: Y.Doc, roomId: string): IndexeddbPersistence {
-  const persistence = new IndexeddbPersistence(`writeboard-doc-${roomId}`, ydoc);
-  return persistence;
+export function useDocPersistence(
+  ydoc: Y.Doc,
+  roomId: string,
+): { persistence: IndexeddbPersistence | null; error: Ref<boolean> } {
+  const error = ref(false);
+  let persistence: IndexeddbPersistence | null = null;
+  try {
+    persistence = new IndexeddbPersistence(`writeboard-doc-${roomId}`, ydoc);
+    (persistence as any).on?.('error', () => {
+      error.value = true;
+    });
+  } catch {
+    error.value = true;
+  }
+  return { persistence, error };
 }
 
 interface RecentRoom {

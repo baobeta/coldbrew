@@ -46,6 +46,13 @@
           </template>
         </Toolbar>
         <InterimBanner :text="interimText" />
+        <div
+          v-if="persistenceError"
+          class="px-3 py-1.5 text-xs text-amber-800 bg-amber-100 border-b border-amber-200"
+        >
+          ⚠ Local autosave is unavailable (private mode or storage blocked). Your work still syncs
+          to the server while connected.
+        </div>
       </div>
       <div class="flex-1 overflow-y-auto">
         <TiptapEditor
@@ -124,8 +131,16 @@ const props = defineProps({
 const sidebarOpen = ref(window.innerWidth >= 768);
 const liveEditor = ref(null);
 
-const { ydoc, provider, userName, userColor, peerCount, participants, connectionStatus } =
-  useCollaboration(props.roomId);
+const {
+  ydoc,
+  provider,
+  userName,
+  userColor,
+  peerCount,
+  participants,
+  connectionStatus,
+  persistenceError,
+} = useCollaboration(props.roomId);
 const {
   tree,
   activePageId,
