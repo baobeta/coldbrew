@@ -79,6 +79,14 @@
         >
           <span class="underline">U</span>
         </button>
+        <button
+          @click="editor.chain().focus().toggleStrike().run()"
+          :class="{ 'bg-black/10 font-semibold': editor.isActive('strike') }"
+          :title="`Strikethrough (${mod}Shift+S)`"
+          class="px-2.5 py-1.5 border-none rounded bg-transparent text-text text-sm font-ui cursor-pointer transition-colors leading-none hover:bg-black/5"
+        >
+          <span class="line-through">S</span>
+        </button>
       </div>
       <div class="w-px h-5 bg-border mx-2" />
       <div class="flex gap-0.5">

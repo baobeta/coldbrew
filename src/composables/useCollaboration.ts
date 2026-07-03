@@ -27,7 +27,7 @@ function randomColor(): string {
 export function useCollaboration(roomId: string): CollaborationReturn {
   const ydoc = new Y.Doc();
 
-  useDocPersistence(ydoc, roomId);
+  const { error: persistenceError } = useDocPersistence(ydoc, roomId);
 
   const provider = new WebsocketProvider(config.websocketServer, `writeboard-${roomId}`, ydoc);
 
@@ -84,5 +84,6 @@ export function useCollaboration(roomId: string): CollaborationReturn {
     peerCount,
     participants,
     connectionStatus,
+    persistenceError,
   };
 }

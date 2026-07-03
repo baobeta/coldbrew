@@ -46,14 +46,21 @@
           </template>
         </Toolbar>
         <InterimBanner :text="interimText" />
+        <div
+          v-if="persistenceError"
+          class="px-3 py-1.5 text-xs text-amber-800 bg-amber-100 border-b border-amber-200"
+        >
+          ⚠ Local autosave is unavailable (private mode or storage blocked). Your work still syncs
+          to the server while connected.
+        </div>
       </div>
       <div class="flex-1 overflow-y-auto">
         <TiptapEditor
           v-if="activePageId"
           :key="activePageId"
-          :ydoc="ydoc"
-          :provider="provider"
-          :fragment="currentFragment"
+          :ydoc="currentPage?.ydoc"
+          :provider="currentPage?.provider"
+          :fragment="currentPage?.fragment"
           :user-name="userName"
           :user-color="userColor"
           @editor-ready="onEditorReady"
@@ -112,6 +119,7 @@ import InterimBanner from '@/components/editor/InterimBanner.vue';
 import PracticePanel from '@/components/editor/PracticePanel.vue';
 import { useCollaboration } from '@/composables/useCollaboration';
 import { useFileTree } from '@/composables/useFileTree';
+import { usePageDocs } from '@/composables/usePageDocs';
 import { useVoiceCapture } from '@/composables/useVoiceCapture';
 import { usePractice } from '@/composables/usePractice';
 import { usePiperTTS } from '@/composables/usePiperTTS';
@@ -124,8 +132,16 @@ const props = defineProps({
 const sidebarOpen = ref(window.innerWidth >= 768);
 const liveEditor = ref(null);
 
-const { ydoc, provider, userName, userColor, peerCount, participants, connectionStatus } =
-  useCollaboration(props.roomId);
+const {
+  ydoc,
+  provider,
+  userName,
+  userColor,
+  peerCount,
+  participants,
+  connectionStatus,
+  persistenceError,
+} = useCollaboration(props.roomId);
 const {
   tree,
   activePageId,
@@ -137,13 +153,13 @@ const {
   moveNode,
   setActivePage,
   toggleFolder,
-  getFragment,
 } = useFileTree(ydoc, provider, props.initialPageId);
 
-const currentFragment = computed(() => {
-  if (!activePageId.value) return null;
-  return getFragment(activePageId.value);
-});
+const pageDocs = usePageDocs(props.roomId);
+
+const currentPage = computed(() =>
+  activePageId.value ? pageDocs.openPage(activePageId.value) : null,
+);
 
 function onEditorReady(editor) {
   liveEditor.value = editor;

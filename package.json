@@ -32,12 +32,14 @@
     "nanoid": "^5.1.11",
     "tailwindcss": "^4.3.0",
     "vue": "^3.5.34",
+    "y-indexeddb": "^9.0.12",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.30"
   },
   "devDependencies": {
     "@types/node": "^25.6.2",
     "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/test-utils": "^2.4.11",
     "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",

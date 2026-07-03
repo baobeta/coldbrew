@@ -1,7 +1,8 @@
 <template>
   <li :class="{ 'is-active': node.type === 'page' && node.id === activePageId }">
     <div
-      class="flex items-center gap-0.5 px-2 py-[3px] cursor-pointer text-[0.82rem] text-text rounded mx-1 my-px transition-colors select-none h-[26px] hover:bg-black/5"
+      data-test="tree-row"
+      class="flex items-center gap-0.5 px-2 py-[3px] cursor-pointer text-[0.82rem] text-text rounded mx-1 transition-colors select-none h-[26px] hover:bg-black/5"
       :class="{
         'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08)]':
           node.type === 'page' && node.id === activePageId,
@@ -9,7 +10,7 @@
       :style="{ paddingLeft: depth * 16 + 8 + 'px' }"
       @click="handleClick"
       @dblclick="startRename"
-      @contextmenu.prevent="showContextMenu"
+      @contextmenu.prevent="onContextMenu"
     >
       <span
         v-if="node.type === 'folder'"
@@ -95,7 +96,7 @@
     </div>
 
     <ul
-      v-if="node.type === 'folder' && isExpanded && node.children?.length"
+      v-if="node.type === 'folder' && isExpanded && node.children?.length && !flat"
       class="list-none p-0 m-0"
     >
       <TreeNode
@@ -104,6 +105,7 @@
         :node="child"
         :depth="depth + 1"
         :active-page-id="activePageId"
+        :is-expanded="expandedFolders.has(child.id)"
         :expanded-folders="expandedFolders"
         @select-page="$emit('select-page', $event)"
         @toggle-folder="$emit('toggle-folder', $event)"
@@ -111,115 +113,22 @@
         @delete="$emit('delete', $event)"
         @create-page="$emit('create-page', $event)"
         @create-folder="$emit('create-folder', $event)"
+        @open-context-menu="$emit('open-context-menu', $event)"
       />
     </ul>
-
-    <div
-      v-if="contextMenu"
-      class="fixed z-50 bg-white border border-border rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)] p-1 min-w-[160px] animate-[context-fade-in_0.1s_ease]"
-      :style="contextMenuStyle"
-      @click.stop
-    >
-      <button
-        v-if="node.type === 'folder'"
-        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
-        @click="onContextAction('new-page')"
-      >
-        <svg
-          class="shrink-0 text-text-muted"
-          width="14"
-          height="14"
-          viewBox="0 0 16 16"
-          fill="none"
-        >
-          <path
-            d="M4.5 1.5h5l3 3v9.5h-8z"
-            stroke="currentColor"
-            stroke-width="1.2"
-            fill="none"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M9.5 1.5v3h3"
-            stroke="currentColor"
-            stroke-width="1.2"
-            fill="none"
-            stroke-linejoin="round"
-          />
-        </svg>
-        New Page
-      </button>
-      <button
-        v-if="node.type === 'folder'"
-        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
-        @click="onContextAction('new-folder')"
-      >
-        <svg
-          class="shrink-0 text-text-muted"
-          width="14"
-          height="14"
-          viewBox="0 0 16 16"
-          fill="none"
-        >
-          <path
-            d="M1.5 3.5h4l1.5 1.5h7.5v8h-13z"
-            stroke="currentColor"
-            stroke-width="1.2"
-            fill="none"
-            stroke-linejoin="round"
-          />
-        </svg>
-        New Folder
-      </button>
-      <div v-if="node.type === 'folder'" class="h-px bg-border mx-1.5 my-[3px]"></div>
-      <button
-        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
-        @click="onContextAction('rename')"
-      >
-        <svg
-          class="shrink-0 text-text-muted"
-          width="14"
-          height="14"
-          viewBox="0 0 16 16"
-          fill="none"
-        >
-          <path
-            d="M11.5 2.5l2 2-8 8H3.5v-2z"
-            stroke="currentColor"
-            stroke-width="1.2"
-            fill="none"
-            stroke-linejoin="round"
-          />
-        </svg>
-        Rename
-      </button>
-      <button
-        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-red-600 text-left cursor-pointer rounded hover:bg-red-600/5"
-        @click="onContextAction('delete')"
-      >
-        <svg class="shrink-0 text-red-600" width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path
-            d="M3 4.5h10M5.5 4.5V3.5h5v1M5.5 4.5v8h5v-8"
-            stroke="currentColor"
-            stroke-width="1.2"
-            fill="none"
-            stroke-linejoin="round"
-          />
-        </svg>
-        Delete
-      </button>
-    </div>
   </li>
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, nextTick, inject, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   node: { type: Object, required: true },
   depth: { type: Number, default: 0 },
   activePageId: { type: String, default: null },
+  isExpanded: { type: Boolean, default: false },
   expandedFolders: { type: Set, default: () => new Set() },
+  flat: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -229,16 +138,23 @@ const emit = defineEmits([
   'delete',
   'create-page',
   'create-folder',
+  'open-context-menu',
 ]);
-
-const isExpanded = computed(() => props.expandedFolders.has(props.node.id));
 
 const isRenaming = ref(false);
 const renameValue = ref('');
 const renameInput = ref(null);
 
-const contextMenu = ref(false);
-const contextMenuStyle = ref({});
+const registerRename = inject('registerRename', null);
+let unregister = null;
+
+onMounted(() => {
+  if (registerRename) unregister = registerRename(props.node.id, startRename);
+});
+
+onUnmounted(() => {
+  unregister?.();
+});
 
 function handleClick() {
   if (props.node.type === 'page') {
@@ -270,41 +186,9 @@ function cancelRename() {
   isRenaming.value = false;
 }
 
-function showContextMenu(e) {
-  contextMenu.value = true;
-  contextMenuStyle.value = {
-    top: e.clientY + 'px',
-    left: e.clientX + 'px',
-  };
+function onContextMenu(e) {
+  emit('open-context-menu', { node: props.node, x: e.clientX, y: e.clientY });
 }
-
-function hideContextMenu() {
-  contextMenu.value = false;
-}
-
-function confirmDelete() {
-  const typeLabel = props.node.type === 'folder' ? 'folder' : 'page';
-  const message = `Delete "${props.node.title}"?\n\nThis ${typeLabel} will be permanently removed.`;
-  if (window.confirm(message)) {
-    emit('delete', props.node.id);
-  }
-}
-
-function onContextAction(action) {
-  contextMenu.value = false;
-  if (action === 'rename') startRename();
-  else if (action === 'delete') confirmDelete();
-  else if (action === 'new-page') emit('create-page', props.node.id);
-  else if (action === 'new-folder') emit('create-folder', props.node.id);
-}
-
-onMounted(() => {
-  document.addEventListener('click', hideContextMenu);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', hideContextMenu);
-});
 </script>
 
 <style scoped>
