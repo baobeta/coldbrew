@@ -63,7 +63,7 @@ export function usePageDocs(roomId: string) {
   }
 
   onUnmounted(() => {
-    for (const id of [...cache.keys()]) destroyEntry(id);
+    for (const id of cache.keys()) destroyEntry(id);
   });
 
   return { openPage, __cacheSize: () => cache.size };

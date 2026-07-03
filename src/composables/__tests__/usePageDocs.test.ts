@@ -21,7 +21,6 @@ vi.mock('y-websocket', () => ({
 }));
 vi.mock('y-indexeddb', () => ({
   IndexeddbPersistence: class {
-    constructor() {}
     on() {}
     destroy() {}
   },
