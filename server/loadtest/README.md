@@ -72,16 +72,27 @@ Run the harness with the command below and record results here before applying T
 N=50 DURATION_MS=10000 EDIT_INTERVAL_MS=100 node loadtest/ws-fanout.mjs
 ```
 
+Recorded baseline below was captured with `N=40 DURATION_MS=6000 EDIT_INTERVAL_MS=50`
+against the pre-optimisation server (commit before Task G). Re-run the SAME command
+after Task G and fill in the "After Task G" column.
+
+```sh
+N=40 DURATION_MS=6000 EDIT_INTERVAL_MS=50 URL=ws://localhost:4455 node loadtest/ws-fanout.mjs
+```
+
 | Metric | Baseline (pre-optimisation) | After Task G |
 |---|---|---|
-| N connections | 50 | 50 |
-| Latency p50 (ms) | _TBD_ | _TBD_ |
-| Latency p95 (ms) | _TBD_ | _TBD_ |
-| Latency p99 (ms) | _TBD_ | _TBD_ |
-| Latency max (ms) | _TBD_ | _TBD_ |
-| Total msgs / sec | _TBD_ | _TBD_ |
+| N connections | 40 | 40 |
+| Latency p50 (ms) | 2.07 | _TBD_ |
+| Latency p95 (ms) | 5.67 | _TBD_ |
+| Latency p99 (ms) | 7.97 | _TBD_ |
+| Latency max (ms) | 10.40 | _TBD_ |
+| Total msgs / sec | 760 | _TBD_ |
 
-Re-run the same command after Task G and fill in the "After Task G" column.
+> Note: at 40 conns / 50ms the current server is already fast (single-digit ms) — the
+> synchronous fan-out only becomes a bottleneck at higher N or edit rates. Task G's
+> coalescing + backpressure targets the tail (p99/max) under bursty load; re-run at
+> higher N (e.g. `N=150 EDIT_INTERVAL_MS=20`) to see the divergence.
 
 ---
 
