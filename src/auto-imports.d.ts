@@ -14,6 +14,7 @@ declare global {
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
   const defineComponent: typeof import('vue').defineComponent
   const effectScope: typeof import('vue').effectScope
+  const flattenTree: typeof import('./composables/useFlattenedTree').flattenTree
   const getCurrentInstance: typeof import('vue').getCurrentInstance
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
@@ -65,8 +66,10 @@ declare global {
   const useCssVars: typeof import('vue').useCssVars
   const useDocPersistence: typeof import('./composables/useLocalStorage').useDocPersistence
   const useFileTree: typeof import('./composables/useFileTree').useFileTree
+  const useFlattenedTree: typeof import('./composables/useFlattenedTree').useFlattenedTree
   const useId: typeof import('vue').useId
   const useModel: typeof import('vue').useModel
+  const usePageDocs: typeof import('./composables/usePageDocs').usePageDocs
   const usePiperTTS: typeof import('./composables/usePiperTTS').usePiperTTS
   const usePractice: typeof import('./composables/usePractice').usePractice
   const useSlots: typeof import('vue').useSlots
@@ -82,6 +85,12 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { FlatRow } from './composables/useFlattenedTree'
+  import('./composables/useFlattenedTree')
+  // @ts-ignore
+  export type { PageDocHandle } from './composables/usePageDocs'
+  import('./composables/usePageDocs')
   // @ts-ignore
   export type { WordResult, PracticeState } from './composables/usePractice'
   import('./composables/usePractice')
@@ -100,6 +109,7 @@ declare module 'vue' {
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
+    readonly flattenTree: UnwrapRef<typeof import('./composables/useFlattenedTree')['flattenTree']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
@@ -151,8 +161,10 @@ declare module 'vue' {
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
     readonly useDocPersistence: UnwrapRef<typeof import('./composables/useLocalStorage')['useDocPersistence']>
     readonly useFileTree: UnwrapRef<typeof import('./composables/useFileTree')['useFileTree']>
+    readonly useFlattenedTree: UnwrapRef<typeof import('./composables/useFlattenedTree')['useFlattenedTree']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
+    readonly usePageDocs: UnwrapRef<typeof import('./composables/usePageDocs')['usePageDocs']>
     readonly usePiperTTS: UnwrapRef<typeof import('./composables/usePiperTTS')['usePiperTTS']>
     readonly usePractice: UnwrapRef<typeof import('./composables/usePractice')['usePractice']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
