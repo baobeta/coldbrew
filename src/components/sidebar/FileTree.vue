@@ -7,6 +7,7 @@
         :node="node"
         :depth="0"
         :active-page-id="activePageId"
+        :is-expanded="expandedFolders.has(node.id)"
         :expanded-folders="expandedFolders"
         @select-page="$emit('select-page', $event)"
         @toggle-folder="$emit('toggle-folder', $event)"

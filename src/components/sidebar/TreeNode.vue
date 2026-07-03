@@ -105,6 +105,7 @@
         :node="child"
         :depth="depth + 1"
         :active-page-id="activePageId"
+        :is-expanded="expandedFolders.has(child.id)"
         :expanded-folders="expandedFolders"
         @select-page="$emit('select-page', $event)"
         @toggle-folder="$emit('toggle-folder', $event)"
@@ -119,12 +120,13 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, inject, onMounted, onUnmounted } from 'vue';
+import { ref, nextTick, inject, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   node: { type: Object, required: true },
   depth: { type: Number, default: 0 },
   activePageId: { type: String, default: null },
+  isExpanded: { type: Boolean, default: false },
   expandedFolders: { type: Set, default: () => new Set() },
 });
 
@@ -137,8 +139,6 @@ const emit = defineEmits([
   'create-folder',
   'open-context-menu',
 ]);
-
-const isExpanded = computed(() => props.expandedFolders.has(props.node.id));
 
 const isRenaming = ref(false);
 const renameValue = ref('');
