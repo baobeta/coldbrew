@@ -38,6 +38,7 @@ export function useFileTree(
 
   const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes');
   const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren');
+  const __stats = { buildCount: 0 };
 
   function getChildrenArray(folderId: string): Y.Array<string> {
     return ydoc.getArray(`children:${folderId}`);
@@ -48,6 +49,7 @@ export function useFileTree(
   }
 
   function buildTreeNode(nodeId: string): TreeNode | null {
+    __stats.buildCount++;
     const nodeMap = nodesMap.get(nodeId);
     if (!nodeMap) return null;
 
@@ -298,5 +300,6 @@ export function useFileTree(
     setActivePage,
     toggleFolder,
     getFragment,
+    __stats,
   };
 }
