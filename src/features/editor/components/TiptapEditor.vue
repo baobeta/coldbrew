@@ -10,7 +10,7 @@ import { useEditor, EditorContent } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Collaboration from '@tiptap/extension-collaboration';
-import CollaborationCursor from '@/extensions/collaborationCursor';
+import CollaborationCursor from '@/features/collaboration/collaborationCursor';
 
 const props = defineProps({
   ydoc: { type: Object, default: null },

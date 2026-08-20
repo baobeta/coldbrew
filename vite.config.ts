@@ -14,12 +14,12 @@ export default defineConfig(() => ({
     oxlintPlugin({ configFile: '.oxlintrc.json' }),
     AutoImport({
       imports: ['vue'],
-      dirs: ['./src/composables'],
+      dirs: ['./src/features/**/composables', './src/features/documents', './src/features/collaboration'],
       dts: './src/auto-imports.d.ts',
       vueTemplate: true,
     }),
     Components({
-      dirs: ['src/components'],
+      dirs: ['src/shared/components', 'src/features/**/components'],
       dts: './src/components.d.ts',
     }),
   ],

@@ -50,10 +50,10 @@ describe('usePageDocs', () => {
   it('evicts the least-recently-used page beyond the cap', () => {
     const pages = usePageDocs('room3');
     ['a', 'b', 'c', 'd', 'e'].forEach((id) => pages.openPage(id));
-    expect(pages.__cacheSize()).toBe(4); // cap enforced
+    expect(pages.cacheSize()).toBe(4); // cap enforced
     pages.openPage('b'); // touch b (MRU)
     const aAgain = pages.openPage('a'); // 'a' was evicted → new entry
     expect(aAgain).toBeTruthy();
-    expect(pages.__cacheSize()).toBe(4);
+    expect(pages.cacheSize()).toBe(4);
   });
 });

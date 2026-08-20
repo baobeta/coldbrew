@@ -22,7 +22,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { icons } from '@/assets/icons';
+import { icons } from '@/shared/icons/icons';
 
 const props = defineProps({
   name: { type: String, required: true },

@@ -145,18 +145,14 @@ Tradeoff: this is more work than using a managed service, but it makes the colla
 
 ```text
 src/
-  components/
-    common/      shared UI components
-    editor/      editor, toolbar, mic button, share button
-    sidebar/     file tree, participants list, sidebar
-  composables/
-    useCollaboration.ts  main Yjs room connection
-    useFileTree.ts       collaborative page/folder tree
-    usePageDocs.ts       lazy page-document loading
-    useLocalStorage.ts   local persistence and recent rooms
-    useVoiceCapture.ts   voice dictation
-  extensions/
-    collaborationCursor.ts
+  app/                  app entry, root component, config, global CSS
+  shared/               shared UI, icons, and shared types
+  features/
+    rooms/              home page and room page screens
+    editor/             editor UI, voice, practice, and text-to-speech logic
+    file-tree/          sidebar tree UI and collaborative tree state
+    collaboration/      Yjs room connection and collaboration cursor
+    documents/          local persistence and lazy page-document loading
 
 server/
   main.mjs        WebSocket sync server

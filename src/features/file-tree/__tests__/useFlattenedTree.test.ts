@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { flattenTree } from '../useFlattenedTree';
-import type { TreeNode } from '@/types';
+import { flattenTree } from '../composables/useFlattenedTree';
+import type { TreeNode } from '@/shared/types';
 
 const page = (id: string): TreeNode => ({ id, type: 'page', title: id });
 const folder = (id: string, children: TreeNode[] = []): TreeNode => ({

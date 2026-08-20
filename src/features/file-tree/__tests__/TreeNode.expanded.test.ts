@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import TreeNode from '../TreeNode.vue';
+import TreeNode from '../components/TreeNode.vue';
 
 describe('TreeNode expansion', () => {
   it('shows children only when isExpanded is true', async () => {

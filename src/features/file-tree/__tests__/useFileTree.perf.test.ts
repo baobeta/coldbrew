@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as Y from 'yjs';
-import { useFileTree } from '../useFileTree';
+import { useFileTree } from '../composables/useFileTree';
 
 vi.mock('vue', async () => {
   const actual = await vi.importActual('vue');
@@ -26,40 +26,40 @@ describe('useFileTree perf', () => {
   });
 
   it('exposes a build counter for profiling', () => {
-    expect(ft.__stats).toBeDefined();
-    expect(typeof ft.__stats.buildCount).toBe('number');
+    expect(ft.stats).toBeDefined();
+    expect(typeof ft.stats.buildCount).toBe('number');
   });
 
   it('rename does zero forest rebuilds (surgical path)', async () => {
     const ids = Array.from({ length: 10 }, (_, i) => ft.createPage(`P${i}`));
     await new Promise((r) => requestAnimationFrame(() => r(null)));
-    const before = ft.__stats.buildCount;
+    const before = ft.stats.buildCount;
     ft.rename(ids[0], 'Renamed');
     await new Promise((r) => requestAnimationFrame(() => r(null)));
-    const delta = ft.__stats.buildCount - before;
+    const delta = ft.stats.buildCount - before;
     // Surgical in-place update: rename fires zero buildTreeNode calls
     expect(delta).toBe(0);
   });
 
   it('coalesces multiple edits in one tick into a single rebuild', async () => {
-    const before = ft.__stats.syncCount ?? 0;
+    const before = ft.stats.syncCount ?? 0;
     ydoc.transact(() => {
       ft.createPage('X');
       ft.createPage('Y');
       ft.createPage('Z');
     });
     await new Promise((r) => requestAnimationFrame(() => r(null)));
-    const delta = (ft.__stats.syncCount ?? 0) - before;
+    const delta = (ft.stats.syncCount ?? 0) - before;
     expect(delta).toBe(1); // one coalesced rebuild, not three
   });
 
   it('rename touches far fewer nodes than the forest size', async () => {
     const ids = Array.from({ length: 100 }, (_, i) => ft.createPage(`P${i}`));
     await new Promise((r) => requestAnimationFrame(() => r(null))); // let creates settle
-    const before = ft.__stats.buildCount;
+    const before = ft.stats.buildCount;
     ft.rename(ids[50], 'Renamed');
     await new Promise((r) => requestAnimationFrame(() => r(null)));
-    const delta = ft.__stats.buildCount - before;
+    const delta = ft.stats.buildCount - before;
     expect(delta).toBeLessThan(10); // was ~100 (full forest) before this task
     expect(ft.tree.value.find((n) => n.id === ids[50])!.title).toBe('Renamed');
   });

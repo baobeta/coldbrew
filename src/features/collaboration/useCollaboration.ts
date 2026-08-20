@@ -1,9 +1,9 @@
 import { ref, onUnmounted } from 'vue';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
-import { config } from '@/config';
-import { useDocPersistence, trackRecentRoom } from '@/composables/useLocalStorage';
-import type { Participant, ConnectionStatus, CollaborationReturn } from '@/types';
+import { config } from '@/app/config';
+import { useDocPersistence, trackRecentRoom } from '@/features/documents/useLocalStorage';
+import type { Participant, ConnectionStatus, CollaborationReturn } from '@/shared/types';
 
 const USER_COLORS: string[] = [
   '#f44336',

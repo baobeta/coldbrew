@@ -11,20 +11,18 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    ErrorBoundary: typeof import('./components/common/ErrorBoundary.vue')['default']
-    FileTree: typeof import('./components/sidebar/FileTree.vue')['default']
-    HomePage: typeof import('./components/HomePage.vue')['default']
-    Icon: typeof import('./components/common/Icon.vue')['default']
-    InterimBanner: typeof import('./components/editor/InterimBanner.vue')['default']
-    MicButton: typeof import('./components/editor/MicButton.vue')['default']
-    ParticipantsList: typeof import('./components/sidebar/ParticipantsList.vue')['default']
-    PracticePanel: typeof import('./components/editor/PracticePanel.vue')['default']
-    RoomPage: typeof import('./components/RoomPage.vue')['default']
-    ShareButton: typeof import('./components/editor/ShareButton.vue')['default']
-    Sidebar: typeof import('./components/sidebar/Sidebar.vue')['default']
-    TiptapEditor: typeof import('./components/editor/TiptapEditor.vue')['default']
-    Toolbar: typeof import('./components/editor/Toolbar.vue')['default']
-    TreeNode: typeof import('./components/sidebar/TreeNode.vue')['default']
-    UserNameModal: typeof import('./components/common/UserNameModal.vue')['default']
+    ErrorBoundary: typeof import('./shared/components/ErrorBoundary.vue')['default']
+    FileTree: typeof import('./features/file-tree/components/FileTree.vue')['default']
+    Icon: typeof import('./shared/components/Icon.vue')['default']
+    InterimBanner: typeof import('./features/editor/components/InterimBanner.vue')['default']
+    MicButton: typeof import('./features/editor/components/MicButton.vue')['default']
+    ParticipantsList: typeof import('./features/file-tree/components/ParticipantsList.vue')['default']
+    PracticePanel: typeof import('./features/editor/components/PracticePanel.vue')['default']
+    ShareButton: typeof import('./features/editor/components/ShareButton.vue')['default']
+    Sidebar: typeof import('./features/file-tree/components/Sidebar.vue')['default']
+    TiptapEditor: typeof import('./features/editor/components/TiptapEditor.vue')['default']
+    Toolbar: typeof import('./features/editor/components/Toolbar.vue')['default']
+    TreeNode: typeof import('./features/file-tree/components/TreeNode.vue')['default']
+    UserNameModal: typeof import('./shared/components/UserNameModal.vue')['default']
   }
 }

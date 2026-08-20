@@ -10,11 +10,11 @@
 
 <script setup>
 import { ref } from 'vue';
-import HomePage from '@/components/HomePage.vue';
-import RoomPage from '@/components/RoomPage.vue';
-import ErrorBoundary from '@/components/common/ErrorBoundary.vue';
-import UserNameModal from '@/components/common/UserNameModal.vue';
-import { getStoredUserName, setStoredUserName } from '@/composables/useLocalStorage';
+import HomePage from '@/features/rooms/HomePage.vue';
+import RoomPage from '@/features/rooms/RoomPage.vue';
+import ErrorBoundary from '@/shared/components/ErrorBoundary.vue';
+import UserNameModal from '@/shared/components/UserNameModal.vue';
+import { getStoredUserName, setStoredUserName } from '@/features/documents/useLocalStorage';
 import { useEventListener } from '@vueuse/core';
 
 const roomId = ref(null);

@@ -132,7 +132,7 @@
 import { ref, computed, provide, onMounted, onUnmounted } from 'vue';
 import { useVirtualList } from '@vueuse/core';
 import TreeNode from './TreeNode.vue';
-import { flattenTree } from '@/composables/useFlattenedTree';
+import { flattenTree } from '@/features/file-tree/composables/useFlattenedTree';
 
 const props = defineProps({
   tree: { type: Array, required: true },

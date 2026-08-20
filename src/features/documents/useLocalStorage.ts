@@ -1,7 +1,7 @@
 import { ref, type Ref } from 'vue';
 import * as Y from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import { config } from '@/config';
+import { config } from '@/app/config';
 
 export function getStoredUserName(): string | null {
   return localStorage.getItem('writeboard-username');

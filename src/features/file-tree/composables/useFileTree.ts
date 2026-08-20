@@ -1,7 +1,7 @@
 import { ref, reactive, onUnmounted } from 'vue';
 import * as Y from 'yjs';
 import { nanoid } from 'nanoid';
-import type { TreeNode } from '@/types';
+import type { TreeNode } from '@/shared/types';
 
 /**
  * Approach C: Flat node map + ordered children arrays
@@ -38,7 +38,7 @@ export function useFileTree(
 
   const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes');
   const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren');
-  const __stats = { buildCount: 0, syncCount: 0 };
+  const stats = { buildCount: 0, syncCount: 0 };
   const nodeCache = new Map<string, TreeNode>();
 
   function getChildrenArray(folderId: string): Y.Array<string> {
@@ -50,7 +50,7 @@ export function useFileTree(
   }
 
   function buildTreeNode(nodeId: string): TreeNode | null {
-    __stats.buildCount++;
+    stats.buildCount++;
     const nodeMap = nodesMap.get(nodeId);
     if (!nodeMap) return null;
 
@@ -70,7 +70,7 @@ export function useFileTree(
   }
 
   function syncTree(): void {
-    __stats.syncCount++;
+    stats.syncCount++;
     nodeCache.clear();
     tree.value = rootChildren.toArray().map(buildTreeNode).filter(Boolean) as TreeNode[];
   }
@@ -333,6 +333,6 @@ export function useFileTree(
     moveNode,
     setActivePage,
     toggleFolder,
-    __stats,
+    stats,
   };
 }

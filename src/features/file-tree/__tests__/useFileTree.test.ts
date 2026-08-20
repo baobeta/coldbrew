@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as Y from 'yjs';
-import { useFileTree } from '../useFileTree';
+import { useFileTree } from '../composables/useFileTree';
 
 // Mock provider with minimal awareness API
 function createMockProvider() {

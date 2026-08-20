@@ -2,7 +2,7 @@ import { onUnmounted } from 'vue';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import { config } from '@/config';
+import { config } from '@/app/config';
 
 export interface PageDocHandle {
   ydoc: Y.Doc;
@@ -66,5 +66,5 @@ export function usePageDocs(roomId: string) {
     for (const id of cache.keys()) destroyEntry(id);
   });
 
-  return { openPage, __cacheSize: () => cache.size };
+  return { openPage, cacheSize: () => cache.size };
 }

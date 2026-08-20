@@ -42,7 +42,7 @@
 <script setup>
 import { ref } from 'vue';
 import { nanoid } from 'nanoid';
-import { trackRecentRoom } from '@/composables/useLocalStorage';
+import { trackRecentRoom } from '@/features/documents/useLocalStorage';
 
 const recentRooms = ref(JSON.parse(localStorage.getItem('writeboard-rooms') || '[]'));
 const roomName = ref('');

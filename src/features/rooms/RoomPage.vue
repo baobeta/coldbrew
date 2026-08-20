@@ -110,19 +110,19 @@ const speedLabel = computed(() => SPEED_LABELS[speedIndex.value]);
 function cycleSpeed() {
   speedIndex.value = (speedIndex.value + 1) % SPEED_OPTIONS.length;
 }
-import TiptapEditor from '@/components/editor/TiptapEditor.vue';
-import Toolbar from '@/components/editor/Toolbar.vue';
-import Sidebar from '@/components/sidebar/Sidebar.vue';
-import MicButton from '@/components/editor/MicButton.vue';
-import ShareButton from '@/components/editor/ShareButton.vue';
-import InterimBanner from '@/components/editor/InterimBanner.vue';
-import PracticePanel from '@/components/editor/PracticePanel.vue';
-import { useCollaboration } from '@/composables/useCollaboration';
-import { useFileTree } from '@/composables/useFileTree';
-import { usePageDocs } from '@/composables/usePageDocs';
-import { useVoiceCapture } from '@/composables/useVoiceCapture';
-import { usePractice } from '@/composables/usePractice';
-import { usePiperTTS } from '@/composables/usePiperTTS';
+import TiptapEditor from '@/features/editor/components/TiptapEditor.vue';
+import Toolbar from '@/features/editor/components/Toolbar.vue';
+import Sidebar from '@/features/file-tree/components/Sidebar.vue';
+import MicButton from '@/features/editor/components/MicButton.vue';
+import ShareButton from '@/features/editor/components/ShareButton.vue';
+import InterimBanner from '@/features/editor/components/InterimBanner.vue';
+import PracticePanel from '@/features/editor/components/PracticePanel.vue';
+import { useCollaboration } from '@/features/collaboration/useCollaboration';
+import { useFileTree } from '@/features/file-tree/composables/useFileTree';
+import { usePageDocs } from '@/features/documents/usePageDocs';
+import { useVoiceCapture } from '@/features/editor/composables/useVoiceCapture';
+import { usePractice } from '@/features/editor/composables/usePractice';
+import { usePiperTTS } from '@/features/editor/composables/usePiperTTS';
 
 const props = defineProps({
   roomId: { type: String, required: true },

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { levenshtein, normalize, compareWords } from '../usePractice';
+import { levenshtein, normalize, compareWords } from '../composables/usePractice';
 
 describe('levenshtein (fastest-levenshtein)', () => {
   it('returns 0 for identical strings', () => {

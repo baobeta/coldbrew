@@ -7,18 +7,19 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue').EffectScope
-  const compareWords: typeof import('./composables/usePractice').compareWords
+  const collaborationCursor: typeof import('./features/collaboration/collaborationCursor').default
+  const compareWords: typeof import('./features/editor/composables/usePractice').compareWords
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
   const customRef: typeof import('vue').customRef
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
   const defineComponent: typeof import('vue').defineComponent
   const effectScope: typeof import('vue').effectScope
-  const flattenTree: typeof import('./composables/useFlattenedTree').flattenTree
+  const flattenTree: typeof import('./features/file-tree/composables/useFlattenedTree').flattenTree
   const getCurrentInstance: typeof import('vue').getCurrentInstance
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
-  const getStoredUserName: typeof import('./composables/useLocalStorage').getStoredUserName
+  const getStoredUserName: typeof import('./features/documents/useLocalStorage').getStoredUserName
   const h: typeof import('vue').h
   const inject: typeof import('vue').inject
   const isProxy: typeof import('vue').isProxy
@@ -26,10 +27,10 @@ declare global {
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
-  const levenshtein: typeof import('./composables/usePractice').levenshtein
+  const levenshtein: typeof import('./features/editor/composables/usePractice').levenshtein
   const markRaw: typeof import('vue').markRaw
   const nextTick: typeof import('vue').nextTick
-  const normalize: typeof import('./composables/usePractice').normalize
+  const normalize: typeof import('./features/editor/composables/usePractice').normalize
   const onActivated: typeof import('vue').onActivated
   const onBeforeMount: typeof import('vue').onBeforeMount
   const onBeforeUnmount: typeof import('vue').onBeforeUnmount
@@ -49,7 +50,7 @@ declare global {
   const readonly: typeof import('vue').readonly
   const ref: typeof import('vue').ref
   const resolveComponent: typeof import('vue').resolveComponent
-  const setStoredUserName: typeof import('./composables/useLocalStorage').setStoredUserName
+  const setStoredUserName: typeof import('./features/documents/useLocalStorage').setStoredUserName
   const shallowReactive: typeof import('vue').shallowReactive
   const shallowReadonly: typeof import('vue').shallowReadonly
   const shallowRef: typeof import('vue').shallowRef
@@ -57,24 +58,24 @@ declare global {
   const toRef: typeof import('vue').toRef
   const toRefs: typeof import('vue').toRefs
   const toValue: typeof import('vue').toValue
-  const trackRecentRoom: typeof import('./composables/useLocalStorage').trackRecentRoom
+  const trackRecentRoom: typeof import('./features/documents/useLocalStorage').trackRecentRoom
   const triggerRef: typeof import('vue').triggerRef
   const unref: typeof import('vue').unref
   const useAttrs: typeof import('vue').useAttrs
-  const useCollaboration: typeof import('./composables/useCollaboration').useCollaboration
+  const useCollaboration: typeof import('./features/collaboration/useCollaboration').useCollaboration
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
-  const useDocPersistence: typeof import('./composables/useLocalStorage').useDocPersistence
-  const useFileTree: typeof import('./composables/useFileTree').useFileTree
-  const useFlattenedTree: typeof import('./composables/useFlattenedTree').useFlattenedTree
+  const useDocPersistence: typeof import('./features/documents/useLocalStorage').useDocPersistence
+  const useFileTree: typeof import('./features/file-tree/composables/useFileTree').useFileTree
+  const useFlattenedTree: typeof import('./features/file-tree/composables/useFlattenedTree').useFlattenedTree
   const useId: typeof import('vue').useId
   const useModel: typeof import('vue').useModel
-  const usePageDocs: typeof import('./composables/usePageDocs').usePageDocs
-  const usePiperTTS: typeof import('./composables/usePiperTTS').usePiperTTS
-  const usePractice: typeof import('./composables/usePractice').usePractice
+  const usePageDocs: typeof import('./features/documents/usePageDocs').usePageDocs
+  const usePiperTTS: typeof import('./features/editor/composables/usePiperTTS').usePiperTTS
+  const usePractice: typeof import('./features/editor/composables/usePractice').usePractice
   const useSlots: typeof import('vue').useSlots
   const useTemplateRef: typeof import('vue').useTemplateRef
-  const useVoiceCapture: typeof import('./composables/useVoiceCapture').useVoiceCapture
+  const useVoiceCapture: typeof import('./features/editor/composables/useVoiceCapture').useVoiceCapture
   const watch: typeof import('vue').watch
   const watchEffect: typeof import('vue').watchEffect
   const watchPostEffect: typeof import('vue').watchPostEffect
@@ -86,14 +87,14 @@ declare global {
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
   // @ts-ignore
-  export type { FlatRow } from './composables/useFlattenedTree'
-  import('./composables/useFlattenedTree')
+  export type { WordResult, PracticeState } from './features/editor/composables/usePractice'
+  import('./features/editor/composables/usePractice')
   // @ts-ignore
-  export type { PageDocHandle } from './composables/usePageDocs'
-  import('./composables/usePageDocs')
+  export type { FlatRow } from './features/file-tree/composables/useFlattenedTree'
+  import('./features/file-tree/composables/useFlattenedTree')
   // @ts-ignore
-  export type { WordResult, PracticeState } from './composables/usePractice'
-  import('./composables/usePractice')
+  export type { PageDocHandle } from './features/documents/usePageDocs'
+  import('./features/documents/usePageDocs')
 }
 
 // for vue template auto import
@@ -102,18 +103,19 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
-    readonly compareWords: UnwrapRef<typeof import('./composables/usePractice')['compareWords']>
+    readonly collaborationCursor: UnwrapRef<typeof import('./features/collaboration/collaborationCursor')['default']>
+    readonly compareWords: UnwrapRef<typeof import('./features/editor/composables/usePractice')['compareWords']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
     readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
-    readonly flattenTree: UnwrapRef<typeof import('./composables/useFlattenedTree')['flattenTree']>
+    readonly flattenTree: UnwrapRef<typeof import('./features/file-tree/composables/useFlattenedTree')['flattenTree']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
-    readonly getStoredUserName: UnwrapRef<typeof import('./composables/useLocalStorage')['getStoredUserName']>
+    readonly getStoredUserName: UnwrapRef<typeof import('./features/documents/useLocalStorage')['getStoredUserName']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
@@ -121,10 +123,10 @@ declare module 'vue' {
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
-    readonly levenshtein: UnwrapRef<typeof import('./composables/usePractice')['levenshtein']>
+    readonly levenshtein: UnwrapRef<typeof import('./features/editor/composables/usePractice')['levenshtein']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
-    readonly normalize: UnwrapRef<typeof import('./composables/usePractice')['normalize']>
+    readonly normalize: UnwrapRef<typeof import('./features/editor/composables/usePractice')['normalize']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
@@ -144,7 +146,7 @@ declare module 'vue' {
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
-    readonly setStoredUserName: UnwrapRef<typeof import('./composables/useLocalStorage')['setStoredUserName']>
+    readonly setStoredUserName: UnwrapRef<typeof import('./features/documents/useLocalStorage')['setStoredUserName']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
@@ -152,24 +154,24 @@ declare module 'vue' {
     readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
     readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly trackRecentRoom: UnwrapRef<typeof import('./composables/useLocalStorage')['trackRecentRoom']>
+    readonly trackRecentRoom: UnwrapRef<typeof import('./features/documents/useLocalStorage')['trackRecentRoom']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
-    readonly useCollaboration: UnwrapRef<typeof import('./composables/useCollaboration')['useCollaboration']>
+    readonly useCollaboration: UnwrapRef<typeof import('./features/collaboration/useCollaboration')['useCollaboration']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
-    readonly useDocPersistence: UnwrapRef<typeof import('./composables/useLocalStorage')['useDocPersistence']>
-    readonly useFileTree: UnwrapRef<typeof import('./composables/useFileTree')['useFileTree']>
-    readonly useFlattenedTree: UnwrapRef<typeof import('./composables/useFlattenedTree')['useFlattenedTree']>
+    readonly useDocPersistence: UnwrapRef<typeof import('./features/documents/useLocalStorage')['useDocPersistence']>
+    readonly useFileTree: UnwrapRef<typeof import('./features/file-tree/composables/useFileTree')['useFileTree']>
+    readonly useFlattenedTree: UnwrapRef<typeof import('./features/file-tree/composables/useFlattenedTree')['useFlattenedTree']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
-    readonly usePageDocs: UnwrapRef<typeof import('./composables/usePageDocs')['usePageDocs']>
-    readonly usePiperTTS: UnwrapRef<typeof import('./composables/usePiperTTS')['usePiperTTS']>
-    readonly usePractice: UnwrapRef<typeof import('./composables/usePractice')['usePractice']>
+    readonly usePageDocs: UnwrapRef<typeof import('./features/documents/usePageDocs')['usePageDocs']>
+    readonly usePiperTTS: UnwrapRef<typeof import('./features/editor/composables/usePiperTTS')['usePiperTTS']>
+    readonly usePractice: UnwrapRef<typeof import('./features/editor/composables/usePractice')['usePractice']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
-    readonly useVoiceCapture: UnwrapRef<typeof import('./composables/useVoiceCapture')['useVoiceCapture']>
+    readonly useVoiceCapture: UnwrapRef<typeof import('./features/editor/composables/useVoiceCapture')['useVoiceCapture']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>

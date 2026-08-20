@@ -1,5 +1,5 @@
 import { computed, type Ref, type ComputedRef } from 'vue';
-import type { TreeNode } from '@/types';
+import type { TreeNode } from '@/shared/types';
 
 export interface FlatRow {
   node: TreeNode;
