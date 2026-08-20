@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [vue()],
   test: {
     environment: 'happy-dom',
-    // The server has its own node:test suites (server/__tests__/*.mjs) run via
-    // `node --test`. Exclude them so vitest (client runner) doesn't try to load them.
-    exclude: ['node_modules', 'dist', 'server/**'],
+    // Backend apps have their own test runners. Keep Vitest focused on the Vue
+    // client so it does not collect Adonis/Japa or legacy Node test files.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', 'apps/backend/**', 'server/**'],
   },
   resolve: {
     alias: {

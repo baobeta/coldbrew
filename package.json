@@ -6,6 +6,11 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "vite",
+    "backend:dev": "npm --prefix apps/backend run dev",
+    "backend:build": "npm --prefix apps/backend run build",
+    "backend:test": "npm --prefix apps/backend run test",
+    "backend:lint": "npm --prefix apps/backend run lint",
+    "backend:typecheck": "npm --prefix apps/backend run typecheck",
     "build": "vite build",
     "preview": "vite preview",
     "type-check": "vue-tsc --build",

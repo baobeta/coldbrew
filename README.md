@@ -154,12 +154,18 @@ src/
     collaboration/      Yjs room connection and collaboration cursor
     documents/          local persistence and lazy page-document loading
 
-server/
-  main.mjs        WebSocket sync server
-  persistence.mjs LevelDB persistence
-  migrate.mjs     per-page document migration
-  coalesce.mjs    update coalescing
-  deploy.sh       VPS deploy script
+apps/
+  backend/              AdonisJS TypeScript API backend
+    app/
+      controllers/      HTTP controllers
+      models/           Lucid models
+      services/         Yjs, rooms, and metrics services
+      validators/       request validators
+    config/             Adonis and Yjs runtime config
+    database/           migrations and schema
+    tests/              unit and functional backend tests
+
+server/                 legacy Node sync server during backend migration
 ```
 
 ## Useful Commands
@@ -172,6 +178,11 @@ pnpm test:run       # run tests once
 pnpm lint           # lint source files
 pnpm format         # format source files
 pnpm type-check     # run TypeScript checks
+npm run backend:dev       # start Adonis backend
+npm run backend:test      # run backend tests
+npm run backend:lint      # lint backend
+npm run backend:typecheck # type-check backend
+npm run backend:build     # build backend
 ```
 
 ## Deployment
