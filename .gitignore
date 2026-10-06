@@ -29,3 +29,4 @@ dist-ssr
 .smoke-db
 .test-db*
 .omx/
+.omc/

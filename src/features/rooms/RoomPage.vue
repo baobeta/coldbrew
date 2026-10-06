@@ -91,9 +91,9 @@
           @play-recording="practicePlayRecording"
           @stop-playback="practiceStopPlayback"
         />
-        <div class="px-4 py-2 text-right">
-          <span class="text-xs text-text-muted">{{ statusText }}</span>
-        </div>
+      </div>
+      <div class="shrink-0 px-4 py-2 text-right">
+        <span class="text-xs text-text-muted">{{ statusText }}</span>
       </div>
     </div>
   </div>
