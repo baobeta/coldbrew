@@ -151,3 +151,71 @@ describe('useFileTree', () => {
     expect(fileTree.activePageId.value).toBe(id);
   });
 });
+
+describe('useFileTree before provider sync', () => {
+  function createDeferredProvider() {
+    const syncHandlers: Array<(synced: boolean) => void> = [];
+    return {
+      awareness: { setLocalStateField() {}, getStates: () => new Map(), on() {} },
+      on(event: string, cb: (data: any) => void) {
+        if (event === 'sync') syncHandlers.push(cb);
+      },
+      emitSync() {
+        syncHandlers.forEach((cb) => cb(true));
+      },
+    };
+  }
+
+  function seedDocWithPage(title: string): { update: Uint8Array; pageId: string } {
+    const remote = new Y.Doc();
+    const pageId = 'seed-page';
+    const node = new Y.Map();
+    remote.transact(() => {
+      node.set('id', pageId);
+      node.set('type', 'page');
+      node.set('title', title);
+      node.set('parentId', null);
+      remote.getMap('nodes').set(pageId, node);
+      remote.getArray('rootChildren').push([pageId]);
+    });
+    return { update: Y.encodeStateAsUpdate(remote), pageId };
+  }
+
+  it('does not create a page before sync, and reuses existing pages once loaded', async () => {
+    const ydoc = new Y.Doc();
+    const provider = createDeferredProvider();
+    const fileTree = useFileTree(ydoc, provider);
+
+    expect(ydoc.getArray('rootChildren').length).toBe(0);
+
+    const { update } = seedDocWithPage('Existing');
+    Y.applyUpdate(ydoc, update);
+    provider.emitSync();
+    await frame();
+
+    expect(fileTree.tree.value.map((n) => n.title)).toEqual(['Existing']);
+    expect(fileTree.activePageId.value).toBe(fileTree.tree.value[0].id);
+  });
+
+  it('selects the existing page as soon as local state loads, before server sync', () => {
+    const ydoc = new Y.Doc();
+    const fileTree = useFileTree(ydoc, createDeferredProvider());
+
+    const { update, pageId } = seedDocWithPage('Local');
+    Y.applyUpdate(ydoc, update);
+
+    expect(fileTree.activePageId.value).toBe(pageId);
+  });
+
+  it('creates a default page only after sync confirms the room is empty', async () => {
+    const ydoc = new Y.Doc();
+    const provider = createDeferredProvider();
+    const fileTree = useFileTree(ydoc, provider);
+
+    provider.emitSync();
+    await frame();
+
+    expect(fileTree.tree.value.length).toBe(1);
+    expect(fileTree.tree.value[0].title).toBe('Untitled');
+  });
+});

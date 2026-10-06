@@ -295,28 +295,35 @@ export function useFileTree(
     return !!nodeMap && nodeMap.get('type') === 'page';
   }
 
-  function initDefaultPage(): void {
-    if (rootChildren.length === 0) {
-      createPage('Untitled');
-    } else if (!activePageId.value) {
-      const targetPage =
-        initialPageId && pageExists(initialPageId) ? initialPageId : findFirstPage();
-      if (targetPage) {
-        activePageId.value = targetPage;
-        broadcastActivePage(targetPage);
-        updateHashPage(targetPage);
-      }
+  // Pick an existing page once one is available (local IndexedDB or server state).
+  function selectExistingPage(): void {
+    if (activePageId.value) return;
+    const targetPage = initialPageId && pageExists(initialPageId) ? initialPageId : findFirstPage();
+    if (targetPage) {
+      activePageId.value = targetPage;
+      broadcastActivePage(targetPage);
+      updateHashPage(targetPage);
     }
   }
 
+  // Only create a default page once the server has synced and confirmed the room is empty.
+  // Doing this before sync would add a fresh "Untitled" page on every visit, since the
+  // Y.Doc starts empty and existing pages merge in asynchronously.
+  function initDefaultPage(): void {
+    if (rootChildren.length === 0) createPage('Untitled');
+    else selectExistingPage();
+  }
+
+  rootChildren.observe(selectExistingPage);
   provider.on('sync', (synced: boolean) => {
     if (synced) initDefaultPage();
   });
-  initDefaultPage();
+  selectExistingPage();
 
   onUnmounted(() => {
     nodesMap.unobserveDeep(onNodesDeep);
     rootChildren.unobserve(syncHandler);
+    rootChildren.unobserve(selectExistingPage);
     for (const [, childArr] of folderObservers) {
       childArr.unobserve(syncHandler);
     }
