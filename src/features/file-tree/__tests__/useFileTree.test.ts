@@ -61,6 +61,48 @@ describe('useFileTree', () => {
     expect(page.type).toBe('page');
   });
 
+  it('creates a text page by default', async () => {
+    const id = fileTree.createPage('Notes');
+    await frame();
+    expect(fileTree.tree.value.find((n) => n.id === id)!.kind).toBe('text');
+    expect(fileTree.activePageKind.value).toBe('text');
+  });
+
+  it('creates a canvas page and selects it', async () => {
+    const id = fileTree.createPage('Sketch', null, 'canvas');
+    await frame();
+    const page = fileTree.tree.value.find((n) => n.id === id)!;
+    expect(page.type).toBe('page');
+    expect(page.kind).toBe('canvas');
+    expect(fileTree.activePageId.value).toBe(id);
+    expect(fileTree.activePageKind.value).toBe('canvas');
+  });
+
+  it('treats a page with no kind as text', async () => {
+    const id = fileTree.createPage('Old page');
+    ydoc.getMap<Y.Map<any>>('nodes').get(id)!.delete('kind');
+    await frame();
+    expect(fileTree.tree.value.find((n) => n.id === id)!.kind).toBe('text');
+    expect(fileTree.activePageKind.value).toBe('text');
+  });
+
+  it('opens a canvas page from a deep link', async () => {
+    const id = fileTree.createPage('Sketch', null, 'canvas');
+    const reopened = useFileTree(ydoc, createMockProvider(), id);
+    await frame();
+    expect(reopened.activePageId.value).toBe(id);
+    expect(reopened.activePageKind.value).toBe('canvas');
+  });
+
+  it('falls back to a canvas page when the active page is deleted', () => {
+    const textId = fileTree.activePageId.value!;
+    const canvasId = fileTree.createPage('Sketch', null, 'canvas');
+    fileTree.setActivePage(textId);
+    fileTree.deleteNode(textId);
+    expect(fileTree.activePageId.value).toBe(canvasId);
+    expect(fileTree.activePageKind.value).toBe('canvas');
+  });
+
   it('creates a folder at root', async () => {
     const id = fileTree.createFolder('My Folder');
     await frame();

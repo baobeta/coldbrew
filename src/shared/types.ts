@@ -1,9 +1,12 @@
 import type { Doc } from 'yjs';
 import type { Ref } from 'vue';
 
+export type PageKind = 'text' | 'canvas';
+
 export interface TreeNode {
   id: string;
   type: 'page' | 'folder';
+  kind?: PageKind;
   title: string;
   children?: TreeNode[];
 }

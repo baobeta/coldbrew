@@ -1,13 +1,14 @@
-import { ref, reactive, onUnmounted } from 'vue';
+import { ref, reactive, computed, onUnmounted } from 'vue';
 import * as Y from 'yjs';
 import { nanoid } from 'nanoid';
-import type { TreeNode } from '@/shared/types';
+import type { PageKind, TreeNode } from '@/shared/types';
 
 /**
  * Approach C: Flat node map + ordered children arrays
  *
  * Y.Map('nodes') — flat map of all nodes keyed by ID. Each node is a Y.Map:
- *   { id, type ('page'|'folder'), title, parentId (string|null) }
+ *   { id, type ('page'|'folder'), kind ('text'|'canvas', pages only), title, parentId (string|null) }
+ *   A page with no kind is a text page, so pages created before canvas support still work.
  *
  * Y.Array('rootChildren') — ordered IDs of top-level nodes
  *
@@ -35,6 +36,11 @@ export function useFileTree(
   const tree = ref<TreeNode[]>([]);
   const activePageId = ref<string | null>(null);
   const expandedFolders = ref<Set<string>>(new Set());
+  // A page's kind never changes, so this only needs to follow activePageId.
+  const activePageKind = computed<PageKind>(() => {
+    const nodeMap = activePageId.value ? nodesMap.get(activePageId.value) : undefined;
+    return nodeMap ? pageKind(nodeMap) : 'text';
+  });
 
   const nodesMap: Y.Map<Y.Map<any>> = ydoc.getMap('nodes');
   const rootChildren: Y.Array<string> = ydoc.getArray('rootChildren');
@@ -49,6 +55,10 @@ export function useFileTree(
     return parentId ? getChildrenArray(parentId) : rootChildren;
   }
 
+  function pageKind(nodeMap: Y.Map<any>): PageKind {
+    return (nodeMap.get('kind') as PageKind | undefined) ?? 'text';
+  }
+
   function buildTreeNode(nodeId: string): TreeNode | null {
     stats.buildCount++;
     const nodeMap = nodesMap.get(nodeId);
@@ -59,6 +69,8 @@ export function useFileTree(
       type: nodeMap.get('type') as 'page' | 'folder',
       title: nodeMap.get('title') as string,
     }) as TreeNode;
+
+    if (node.type === 'page') node.kind = pageKind(nodeMap);
 
     if (node.type === 'folder') {
       const childArr = getChildrenArray(nodeId);
@@ -87,13 +99,18 @@ export function useFileTree(
     else queueMicrotask(run);
   }
 
-  function createPage(title = 'Untitled', parentId: string | null = null): string {
+  function createPage(
+    title = 'Untitled',
+    parentId: string | null = null,
+    kind: PageKind = 'text',
+  ): string {
     const id = nanoid(8);
 
     ydoc.transact(() => {
       const nodeMap = new Y.Map();
       nodeMap.set('id', id);
       nodeMap.set('type', 'page');
+      nodeMap.set('kind', kind);
       nodeMap.set('title', title);
       nodeMap.set('parentId', parentId);
       nodesMap.set(id, nodeMap);
@@ -332,6 +349,7 @@ export function useFileTree(
   return {
     tree,
     activePageId,
+    activePageKind,
     expandedFolders,
     createPage,
     createFolder,
