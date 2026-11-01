@@ -26,6 +26,10 @@ function createAwareness() {
   };
 }
 
+function pointer(pointerId: number, clientX: number, clientY: number) {
+  return { button: 0, buttons: 1, pointerId, clientX, clientY, pressure: 0.2 };
+}
+
 describe('CanvasEditor', () => {
   let strokes: Y.Array<StrokeRecord>;
   let awareness: ReturnType<typeof createAwareness>;
@@ -145,6 +149,29 @@ describe('CanvasEditor', () => {
       .find('[data-test="canvas-surface"]')
       .trigger('pointerdown', { button: 0, clientX: 1, clientY: 1, pressure: 0.2 });
     other.unmount();
+    expect(strokes.length).toBe(1);
+  });
+
+  it('keeps the stroke when a second pointer lands mid-stroke', async () => {
+    await surface().trigger('pointerdown', pointer(1, 10, 10));
+    await surface().trigger('pointermove', pointer(1, 20, 20));
+    await surface().trigger('pointerdown', pointer(2, 200, 200));
+    await surface().trigger('pointermove', pointer(2, 210, 210));
+    await surface().trigger('pointerup', pointer(2, 210, 210));
+    expect(strokes.length).toBe(0);
+    await surface().trigger('pointermove', pointer(1, 30, 30));
+    await surface().trigger('pointerup', pointer(1, 30, 30));
+    expect(strokes.length).toBe(1);
+    expect(decodePoints(strokes.get(0).pts).map((point) => point[0])).toEqual([10, 20, 30]);
+  });
+
+  it('stops panning when space is released in another window', async () => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space', key: ' ' }));
+    window.dispatchEvent(new Event('blur'));
+    await draw([
+      [10, 10],
+      [50, 10],
+    ]);
     expect(strokes.length).toBe(1);
   });
 

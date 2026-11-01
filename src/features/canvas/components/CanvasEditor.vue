@@ -54,6 +54,7 @@ import {
   strokePath,
   visibleBounds,
 } from '@/features/canvas/renderer';
+import { applyPressureCurve } from '@/features/canvas/pressure';
 import { commandForKey, isTypingTarget } from '@/features/canvas/shortcuts';
 import { encodePoints } from '@/features/canvas/strokeCodec';
 import { createStrokeBuilder } from '@/features/canvas/strokeBuilder';
@@ -98,6 +99,7 @@ let activeStroke = null;
 let predictedPoints = [];
 let isErasing = false;
 let lastPan = null;
+let activePointerId = null;
 
 function clearContext(context) {
   context.setTransform(1, 0, 0, 1, 0, 0);
@@ -230,6 +232,8 @@ function updateRing(event) {
 }
 
 function onPointerDown(event) {
+  // The first pointer owns the interaction, so a palm or second finger can't end its stroke.
+  if (activePointerId !== null) return;
   rect = surface.value.getBoundingClientRect();
   surface.value.setPointerCapture?.(event.pointerId);
   if (event.button === 1 || (event.button === 0 && spaceHeld.value)) {
@@ -240,10 +244,14 @@ function onPointerDown(event) {
     eraseAt(toCanvasSample(event));
   } else if (event.button === 0) {
     startStroke(toCanvasSample(event));
+  } else {
+    return;
   }
+  activePointerId = event.pointerId;
 }
 
 function onPointerMove(event) {
+  if (activePointerId !== null && event.pointerId !== activePointerId) return;
   updateRing(event);
   if (isPanning.value) {
     pan(event.clientX - lastPan[0], event.clientY - lastPan[1]);
@@ -254,7 +262,7 @@ function onPointerMove(event) {
     samplesFrom(event).forEach(activeStroke.builder.add);
     predictedPoints = (event.getPredictedEvents?.() ?? [])
       .map(toCanvasSample)
-      .map(({ x, y, pressure }) => [x, y, pressure]);
+      .map(({ x, y, pressure }) => [x, y, applyPressureCurve(pressure)]);
     const { id, builder, style } = activeStroke;
     publish(
       id,
@@ -266,10 +274,21 @@ function onPointerMove(event) {
   }
 }
 
-function onPointerEnd() {
+function endInteraction() {
+  activePointerId = null;
   isPanning.value = false;
   isErasing = false;
   finishStroke();
+}
+
+function onPointerEnd(event) {
+  if (event.pointerId === activePointerId) endInteraction();
+}
+
+// Keyup never arrives if space is released in another window.
+function onWindowBlur() {
+  spaceHeld.value = false;
+  endInteraction();
 }
 
 function onWheel(event) {
@@ -314,7 +333,7 @@ function onKeyUp(event) {
 
 useEventListener(window, 'keydown', onKeyDown);
 useEventListener(window, 'keyup', onKeyUp);
-useEventListener(window, 'blur', onPointerEnd);
+useEventListener(window, 'blur', onWindowBlur);
 useResizeObserver(surface, resize);
 
 watch(view, () => {
