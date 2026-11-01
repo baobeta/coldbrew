@@ -35,6 +35,7 @@
     "diff": "^9.0.0",
     "fastest-levenshtein": "^1.0.16",
     "nanoid": "^5.1.11",
+    "perfect-freehand": "^1.2.3",
     "tailwindcss": "^4.3.0",
     "vue": "^3.5.34",
     "y-indexeddb": "^9.0.12",
