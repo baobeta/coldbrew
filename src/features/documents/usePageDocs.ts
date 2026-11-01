@@ -3,11 +3,13 @@ import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { config } from '@/app/config';
+import type { StrokeRecord } from '@/features/canvas/types';
 
 export interface PageDocHandle {
   ydoc: Y.Doc;
   provider: WebsocketProvider;
   fragment: Y.XmlFragment;
+  strokes: Y.Array<StrokeRecord>;
 }
 
 interface Entry extends PageDocHandle {
@@ -32,7 +34,8 @@ export function usePageDocs(roomId: string) {
     const provider = new WebsocketProvider(config.websocketServer, room, ydoc);
     const indexeddb = new IndexeddbPersistence(`writeboard-doc-${roomId}--page--${pageId}`, ydoc);
     const fragment = ydoc.getXmlFragment('content');
-    const entry: Entry = { ydoc, provider, indexeddb, fragment, lastUsed: ++clock };
+    const strokes = ydoc.getArray<StrokeRecord>('strokes');
+    const entry: Entry = { ydoc, provider, indexeddb, fragment, strokes, lastUsed: ++clock };
     cache.set(pageId, entry);
     evictIfNeeded();
     return entry;

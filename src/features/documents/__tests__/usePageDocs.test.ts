@@ -38,6 +38,12 @@ describe('usePageDocs', () => {
     expect(providers).toContain('writeboard-room1--page--pageA');
   });
 
+  it('exposes the strokes array from the page doc', () => {
+    const pages = usePageDocs('room4');
+    const { ydoc, strokes } = pages.openPage('pageA');
+    expect(strokes).toBe(ydoc.getArray('strokes'));
+  });
+
   it('reuses the same provider on cache hit (no new connection)', () => {
     providers.length = 0;
     const pages = usePageDocs('room2');
