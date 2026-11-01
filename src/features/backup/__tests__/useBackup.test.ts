@@ -142,6 +142,17 @@ describe('useBackup', () => {
     expect(restoreTree).not.toHaveBeenCalled();
   });
 
+  it('shows progress with Cancel before the first page finishes', async () => {
+    const { backup, openPage } = setup();
+    let seen: string | null = null;
+    openPage.mockImplementation(async () => {
+      seen = backup.progress.value;
+      throw new Error('stopped');
+    });
+    await backup.exportRoom();
+    expect(seen).not.toBe(null);
+  });
+
   it('shows no error after cancelling', async () => {
     const { backup, download, openPage } = setup();
     openPage.mockImplementation(async () => {

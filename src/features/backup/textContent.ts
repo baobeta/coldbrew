@@ -5,8 +5,26 @@ import type * as Y from 'yjs';
 import { BackupError } from './errors';
 
 const schema = getSchema([StarterKit]);
+type ProseMirrorNode = ReturnType<typeof schema.nodeFromJSON>;
+type Mark = ProseMirrorNode['marks'][number];
+
 const EMPTY_DOC = { type: 'doc', content: [{ type: 'paragraph' }] };
-const SAFE_LINK_SCHEMES = new Set(['http', 'https', 'mailto', 'tel']);
+const MAX_TEXT_DEPTH = 64;
+const CODE_LANGUAGE = /^[\w+#.-]{1,40}$/;
+const LINK_TARGETS = new Set([null, '_blank', '_self']);
+// Matches what Tiptap's Link allows, so any link the editor accepts can be backed up.
+const SAFE_LINK_SCHEMES = new Set([
+  'http',
+  'https',
+  'ftp',
+  'ftps',
+  'mailto',
+  'tel',
+  'callto',
+  'sms',
+  'cid',
+  'xmpp',
+]);
 
 function isSafeLink(href: unknown): boolean {
   if (typeof href !== 'string') return false;
@@ -26,13 +44,40 @@ export function writeText(fragment: Y.XmlFragment, content: unknown): void {
   prosemirrorJSONToYXmlFragment(schema, content, fragment);
 }
 
+function checkMark(mark: Mark): void {
+  if (mark.type.name !== 'link') return;
+  const { href, class: className, target } = mark.attrs;
+  // A class could turn a link into an invisible overlay, so only the defaults are allowed.
+  if (!isSafeLink(href) || className !== null || !LINK_TARGETS.has(target)) {
+    throw new BackupError('The backup contains an unsafe link.');
+  }
+}
+
+function hasValidAttrs(node: ProseMirrorNode): boolean {
+  const { level, start, language } = node.attrs;
+  switch (node.type.name) {
+    case 'heading':
+      return Number.isInteger(level) && level >= 1 && level <= 6;
+    case 'orderedList':
+      return Number.isInteger(start);
+    case 'codeBlock':
+      return language === null || (typeof language === 'string' && CODE_LANGUAGE.test(language));
+    default:
+      return true;
+  }
+}
+
+function checkNode(node: ProseMirrorNode, depth: number): void {
+  if (depth > MAX_TEXT_DEPTH || !hasValidAttrs(node)) {
+    throw new BackupError('The backup has invalid text.');
+  }
+  node.marks.forEach(checkMark);
+  node.forEach((child) => checkNode(child, depth + 1));
+}
+
 export function checkTextContent(content: unknown): void {
   const doc = schema.nodeFromJSON(content);
   doc.check();
   if (doc.type !== schema.topNodeType) throw new BackupError('The backup has invalid text.');
-  doc.descendants((node) => {
-    if (node.marks.some((mark) => mark.type.name === 'link' && !isSafeLink(mark.attrs.href))) {
-      throw new BackupError('The backup contains an unsafe link.');
-    }
-  });
+  checkNode(doc, 0);
 }

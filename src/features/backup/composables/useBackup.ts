@@ -63,6 +63,7 @@ export function useBackup({
     }
     const current = new AbortController();
     controller = current;
+    progress.value = 'Starting…'; // shows Cancel before the first page finishes
     try {
       await task(current.signal);
     } catch (failure) {

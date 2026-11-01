@@ -8,12 +8,13 @@ export { BackupError };
 const BACKUP_FORMAT = 'coldbrew-backup';
 const BACKUP_VERSION = 1;
 const MAX_DEPTH = 32;
-const MAX_TITLE_LENGTH = 500;
 const MAX_STROKE_SIZE = 64;
 const BYTES_CHUNK = 0x8000;
 
 export const MAX_BACKUP_BYTES = 50 * 1024 * 1024;
 export const MAX_PAGES = 2000;
+export const MAX_FOLDERS = 2000;
+export const MAX_TITLE_LENGTH = 500;
 
 export interface BackupStroke extends StrokeStyle {
   pts: string; // base64 of the packed points
@@ -86,12 +87,13 @@ function checkStroke(stroke: any): void {
   decodePoints(base64ToBytes(stroke.pts));
 }
 
-function checkNode(node: any, depth: number, counter: { pages: number }): void {
+function checkNode(node: any, depth: number, counter: { pages: number; folders: number }): void {
   if (depth > MAX_DEPTH) throw new BackupError('The backup is too deeply nested.');
   if (typeof node?.title !== 'string' || node.title.length > MAX_TITLE_LENGTH) throw invalid();
   if (node.type === 'folder') {
     requireObject(node, ['type', 'title', 'children']);
     if (!Array.isArray(node.children)) throw invalid();
+    if (++counter.folders > MAX_FOLDERS) throw new BackupError('The backup has too many folders.');
     for (const child of node.children) checkNode(child, depth + 1, counter);
     return;
   }
@@ -111,7 +113,10 @@ function checkNode(node: any, depth: number, counter: { pages: number }): void {
 
 // A backup is untrusted input, so nothing is written to a room until this passes.
 export async function parseBackup(text: string): Promise<BackupFile> {
-  if (text.length > MAX_BACKUP_BYTES) throw new BackupError('The backup file is too large.');
+  // Counts bytes, like file.size, so anything exported here can also be imported.
+  if (new TextEncoder().encode(text).length > MAX_BACKUP_BYTES) {
+    throw new BackupError('The backup file is too large.');
+  }
   try {
     const file = JSON.parse(text);
     if (file?.format !== BACKUP_FORMAT) throw new BackupError('This is not a Coldbrew backup.');
@@ -124,7 +129,7 @@ export async function parseBackup(text: string): Promise<BackupFile> {
       throw invalid();
     }
     if (!Array.isArray(file.nodes)) throw invalid();
-    const counter = { pages: 0 };
+    const counter = { pages: 0, folders: 0 };
     for (const node of file.nodes) checkNode(node, 1, counter);
     if (file.checksum !== (await checksumOf(file.nodes))) {
       throw new BackupError('The backup file is damaged.');

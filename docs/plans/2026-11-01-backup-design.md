@@ -29,9 +29,9 @@ One JSON file, `*.coldbrew.json`, with `format`, `version`, `exportedAt`, `check
 
 ## Validation
 
-- Limits: 50 MB, 2,000 pages, nesting depth 32.
+- Limits: 50 MB, 2,000 pages, 2,000 folders, tree depth 32, text depth 64.
 - Unknown fields, node kinds and tools are rejected.
-- Text must pass the editor schema. Links must be relative or use `http`, `https`, `mailto` or `tel`.
+- Text must pass the editor schema. Links must be relative or use a scheme Tiptap's Link allows. Link classes are rejected, and heading, list and code attributes are type-checked.
 - Stroke bytes must decode.
 - Export runs this same validation before downloading, so a file that can't be restored is never saved.
 
@@ -54,6 +54,8 @@ A stroke that can't be decoded is skipped with a console warning, matching how t
 5. Add the folder and pages to the file tree in one transaction, last of all.
 
 A failed import leaves unlinked page documents on the server. Nobody can see them and they do no harm.
+
+The read-back confirms the server has the page in memory, not on disk. A LevelDB write failure is only logged on the server, so a full disk could lose a restored page after a restart. Closing that gap needs a server change.
 
 ## Interface
 

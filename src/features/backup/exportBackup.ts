@@ -1,9 +1,15 @@
 import { decodePoints } from '@/features/canvas/strokeCodec';
 import type { StrokeRecord } from '@/features/canvas/types';
 import type { TreeNode } from '@/shared/types';
-import { BackupError, bytesToBase64, type BackupNode, type BackupStroke } from './backupFormat';
+import {
+  BackupError,
+  MAX_TITLE_LENGTH,
+  bytesToBase64,
+  type BackupNode,
+  type BackupStroke,
+} from './backupFormat';
 import type { PageSession } from './pageSession';
-import { readText } from './textContent';
+import { checkTextContent, readText } from './textContent';
 
 export const PAGE_CONCURRENCY = 3;
 
@@ -54,22 +60,24 @@ function toBackupStrokes(records: StrokeRecord[]): BackupStroke[] {
 }
 
 function readPage(page: TreeNode, session: PageSession): PageContent {
-  return page.kind === 'canvas'
-    ? { strokes: toBackupStrokes(session.strokes.toArray()) }
-    : { content: readText(session.fragment) };
+  if (page.kind === 'canvas') return { strokes: toBackupStrokes(session.strokes.toArray()) };
+  const content = readText(session.fragment);
+  checkTextContent(content); // here, so a failure can name the page
+  return { content };
 }
 
 function toBackupNodes(nodes: TreeNode[], contents: Map<string, PageContent>): BackupNode[] {
   return nodes.map((node) => {
+    const title = node.title.slice(0, MAX_TITLE_LENGTH);
     if (node.type === 'folder') {
       return {
         type: 'folder',
-        title: node.title,
+        title,
         children: toBackupNodes(node.children ?? [], contents),
       };
     }
     const kind = node.kind ?? 'text';
-    return { type: 'page', kind, title: node.title, ...contents.get(node.id) } as BackupNode;
+    return { type: 'page', kind, title, ...contents.get(node.id) } as BackupNode;
   });
 }
 
@@ -88,6 +96,7 @@ export async function exportTree(
     pages,
     PAGE_CONCURRENCY,
     async (page) => {
+      if (failed.length) return;
       try {
         const session = await open(page.id);
         try {
@@ -105,7 +114,7 @@ export async function exportTree(
   );
 
   if (failed.length) {
-    throw new BackupError(`Nothing was saved. These pages could not load: ${failed.join(', ')}`);
+    throw new BackupError(`Nothing was saved. These pages could not be read: ${failed.join(', ')}`);
   }
   return toBackupNodes(nodes, contents);
 }

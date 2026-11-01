@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   BackupError,
   MAX_BACKUP_BYTES,
+  MAX_FOLDERS,
   MAX_PAGES,
   base64ToBytes,
   bytesToBase64,
@@ -41,6 +42,13 @@ async function withNodes(edit: (copy: any[]) => void) {
   const copy = JSON.parse(JSON.stringify(nodes));
   edit(copy);
   return serialized(copy);
+}
+
+function heading(level: unknown) {
+  return {
+    type: 'doc',
+    content: [{ type: 'heading', attrs: { level }, content: [{ type: 'text', text: 'x' }] }],
+  };
 }
 
 function link(href: string) {
@@ -131,6 +139,49 @@ describe('parseBackup', () => {
       (copy) => (copy[0].children[0].content = link('https://example.com')),
     );
     await expect(parseBackup(good)).resolves.toBeTruthy();
+  });
+
+  it('keeps links the editor allows, such as ftp and sms', async () => {
+    for (const href of ['ftp://example.com/a', 'sms:+15551234', 'tel:+15551234', '/relative']) {
+      const file = await withNodes((copy) => (copy[0].children[0].content = link(href)));
+      await expect(parseBackup(file)).resolves.toBeTruthy();
+    }
+  });
+
+  it('rejects link attributes that could change how the page looks', async () => {
+    const file = await withNodes((copy) => {
+      const crafted = link('https://example.com') as any;
+      crafted.content[0].content[0].marks[0].attrs.class = 'fixed inset-0';
+      copy[0].children[0].content = crafted;
+    });
+    await expect(parseBackup(file)).rejects.toThrow(/unsafe/);
+  });
+
+  it('rejects attributes of the wrong type', async () => {
+    const bad = await withNodes((copy) => (copy[0].children[0].content = heading({ evil: true })));
+    await expect(parseBackup(bad)).rejects.toThrow(BackupError);
+    const good = await withNodes((copy) => (copy[0].children[0].content = heading(2)));
+    await expect(parseBackup(good)).resolves.toBeTruthy();
+  });
+
+  it('rejects text nested too deeply to write', async () => {
+    let block: any = { type: 'paragraph' };
+    for (let i = 0; i < 1500; i++) block = { type: 'blockquote', content: [block] };
+    const file = await withNodes(
+      (copy) => (copy[0].children[0].content = { type: 'doc', content: [block] }),
+    );
+    await expect(parseBackup(file)).rejects.toThrow(BackupError);
+  });
+
+  it('measures size in bytes, the same way as a file on disk', async () => {
+    await expect(parseBackup('中'.repeat(MAX_BACKUP_BYTES / 2))).rejects.toThrow(/too large/);
+  });
+
+  it('rejects too many folders', async () => {
+    const folder = { type: 'folder', title: '', children: [] } as BackupNode;
+    await expect(
+      parseBackup(await serialized(Array.from({ length: MAX_FOLDERS + 1 }, () => folder))),
+    ).rejects.toThrow(/too many/);
   });
 
   it('rejects bad stroke fields and bytes', async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import * as Y from 'yjs';
-import { BackupError, bytesToBase64, type BackupNode } from '../backupFormat';
+import { BackupError, MAX_TITLE_LENGTH, bytesToBase64, type BackupNode } from '../backupFormat';
 import { exportTree } from '../exportBackup';
 import { restoreBackup, RESTORED_PREFIX } from '../importBackup';
 import { readText, writeText } from '../textContent';
@@ -99,6 +99,44 @@ describe('exportTree', () => {
     await expect(exportTree(tree, open)).rejects.toThrow(/Sketch/);
     await expect(exportTree(tree, open)).rejects.toThrow(BackupError);
     expect(store.closed).toContain('t');
+  });
+
+  it('names the page when its text cannot be restored', async () => {
+    const store = createStore();
+    const unsafe = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'x', marks: [{ type: 'link', attrs: { href: 'javascript:x' } }] },
+          ],
+        },
+      ],
+    };
+    writeText(store.getDoc('t').getXmlFragment('content'), unsafe);
+    await expect(exportTree(tree, store.open)).rejects.toThrow(/Plan/);
+  });
+
+  it('stops opening pages after the first failure', async () => {
+    const pages: TreeNode[] = Array.from({ length: 30 }, (_, i) => ({
+      id: `p${i}`,
+      type: 'page',
+      kind: 'text',
+      title: `Page ${i}`,
+    }));
+    const open = vi.fn(() => Promise.reject(new Error('server down')));
+    await expect(exportTree(pages, open)).rejects.toThrow(BackupError);
+    expect(open.mock.calls.length).toBeLessThanOrEqual(3);
+  });
+
+  it('shortens a very long title instead of making the room unexportable', async () => {
+    const store = createStore();
+    const [node] = await exportTree(
+      [{ id: 'n', type: 'page', kind: 'text', title: 'x'.repeat(MAX_TITLE_LENGTH + 50) }],
+      store.open,
+    );
+    expect(node.title).toHaveLength(MAX_TITLE_LENGTH);
   });
 
   it('skips a stroke that cannot be decoded', async () => {
@@ -221,6 +259,22 @@ describe('restoreBackup', () => {
     await expect(
       restoreBackup(backup, { open: store.open, commit, signal: controller.signal }),
     ).rejects.toThrow();
+    expect(commit).not.toHaveBeenCalled();
+  });
+
+  it('stops writing pages after the first failure', async () => {
+    const pages: BackupNode[] = Array.from({ length: 30 }, (_, i) => ({
+      type: 'page',
+      kind: 'canvas',
+      title: `Page ${i}`,
+      strokes: [],
+    }));
+    const open = vi.fn(() => Promise.reject(new Error('server down')));
+    const commit = vi.fn();
+    await expect(
+      restoreBackup({ exportedAt: backup.exportedAt, nodes: pages }, { open, commit }),
+    ).rejects.toThrow(BackupError);
+    expect(open.mock.calls.length).toBeLessThanOrEqual(3);
     expect(commit).not.toHaveBeenCalled();
   });
 

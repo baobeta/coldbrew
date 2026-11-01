@@ -69,6 +69,7 @@ export async function restoreBackup(
     [...pages],
     PAGE_CONCURRENCY,
     async ([id, page]) => {
+      if (failed.length) return;
       try {
         const session = await open(id);
         try {

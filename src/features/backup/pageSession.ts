@@ -7,8 +7,8 @@ import type { StrokeRecord } from '@/features/canvas/types';
 
 const SYNC_TIMEOUT_MS = 15000;
 const LOCAL_LOAD_TIMEOUT_MS = 2000;
-const CONFIRM_ATTEMPTS = 8;
-const CONFIRM_RETRY_MS = 300;
+const CONFIRM_ATTEMPTS = 30;
+const CONFIRM_RETRY_MS = 500;
 
 export interface PageSession {
   fragment: Y.XmlFragment;
