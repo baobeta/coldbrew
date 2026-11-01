@@ -134,6 +134,28 @@
         Rename
       </button>
       <button
+        data-test="export-node"
+        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
+        @click="onContextAction('export')"
+      >
+        <svg
+          class="shrink-0 text-text-muted"
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <path
+            d="M8 2v8M5 7l3 3 3-3M3 11v2h10v-2"
+            stroke="currentColor"
+            stroke-width="1.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Export
+      </button>
+      <button
         class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-red-600 text-left cursor-pointer rounded hover:bg-red-600/5"
         @click="onContextAction('delete')"
       >
@@ -172,6 +194,7 @@ const emit = defineEmits([
   'create-page',
   'create-canvas',
   'create-folder',
+  'export-node',
 ]);
 
 // Flat ordered list of all visible rows — recomputed on expand/collapse
@@ -209,6 +232,8 @@ function onContextAction(action) {
     if (window.confirm(message)) {
       emit('delete', node.id);
     }
+  } else if (action === 'export') {
+    emit('export-node', node.id);
   } else if (action === 'new-page') {
     emit('create-page', node.id);
   } else if (action === 'new-canvas') {

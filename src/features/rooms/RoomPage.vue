@@ -9,6 +9,9 @@
       @create-page="createPage('Untitled', $event)"
       @create-canvas="createPage('Untitled', $event, 'canvas')"
       @create-folder="createFolder('New Folder', $event)"
+      @export-room="exportRoom"
+      @export-node="exportNode"
+      @import-file="importFile"
       @select-page="setActivePage"
       @toggle-folder="toggleFolder"
       @rename="onRename"
@@ -54,6 +57,26 @@
         >
           ⚠ Local autosave is unavailable (private mode or storage blocked). Your work still syncs
           to the server while connected.
+        </div>
+        <div
+          v-if="backupProgress"
+          data-test="backup-progress"
+          class="flex items-center justify-between px-3 py-1.5 text-xs text-text bg-black/5 border-b border-border"
+        >
+          <span>{{ backupProgress }}</span>
+          <button class="border-none bg-transparent cursor-pointer underline" @click="cancelBackup">
+            Cancel
+          </button>
+        </div>
+        <div
+          v-if="backupError"
+          data-test="backup-error"
+          class="flex items-center justify-between gap-3 px-3 py-1.5 text-xs text-red-800 bg-red-100 border-b border-red-200"
+        >
+          <span>{{ backupError }}</span>
+          <button class="border-none bg-transparent cursor-pointer underline" @click="dismissError">
+            Dismiss
+          </button>
         </div>
       </div>
       <CanvasEditor
@@ -128,6 +151,7 @@ import MicButton from '@/features/editor/components/MicButton.vue';
 import ShareButton from '@/features/editor/components/ShareButton.vue';
 import InterimBanner from '@/features/editor/components/InterimBanner.vue';
 import PracticePanel from '@/features/editor/components/PracticePanel.vue';
+import { useBackup } from '@/features/backup/composables/useBackup';
 import { useCollaboration } from '@/features/collaboration/useCollaboration';
 import { useFileTree } from '@/features/file-tree/composables/useFileTree';
 import { usePageDocs } from '@/features/documents/usePageDocs';
@@ -160,6 +184,7 @@ const {
   expandedFolders,
   createPage,
   createFolder,
+  restoreTree,
   rename,
   deleteNode,
   moveNode,
@@ -171,6 +196,16 @@ const isCanvasPage = computed(() => activePageKind.value === 'canvas');
 const liveEditor = useLiveEditor(activePageId);
 
 const pageDocs = usePageDocs(props.roomId);
+
+const {
+  progress: backupProgress,
+  error: backupError,
+  exportRoom,
+  exportNode,
+  importFile,
+  cancel: cancelBackup,
+  dismissError,
+} = useBackup({ roomId: props.roomId, tree, restoreTree, connectionStatus });
 
 const currentPage = computed(() =>
   activePageId.value ? pageDocs.openPage(activePageId.value) : null,

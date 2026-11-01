@@ -49,6 +49,8 @@ declare global {
   const onUnmounted: typeof import('vue').onUnmounted
   const onUpdated: typeof import('vue').onUpdated
   const onWatcherCleanup: typeof import('vue').onWatcherCleanup
+  const pageDbName: typeof import('./features/documents/usePageDocs').pageDbName
+  const pageRoomName: typeof import('./features/documents/usePageDocs').pageRoomName
   const panBy: typeof import('./features/canvas/composables/useViewport').panBy
   const provide: typeof import('vue').provide
   const reactive: typeof import('vue').reactive
@@ -68,6 +70,7 @@ declare global {
   const triggerRef: typeof import('vue').triggerRef
   const unref: typeof import('vue').unref
   const useAttrs: typeof import('vue').useAttrs
+  const useBackup: typeof import('./features/backup/composables/useBackup').useBackup
   const useCollaboration: typeof import('./features/collaboration/useCollaboration').useCollaboration
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
@@ -160,6 +163,8 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly pageDbName: UnwrapRef<typeof import('./features/documents/usePageDocs')['pageDbName']>
+    readonly pageRoomName: UnwrapRef<typeof import('./features/documents/usePageDocs')['pageRoomName']>
     readonly panBy: UnwrapRef<typeof import('./features/canvas/composables/useViewport')['panBy']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
@@ -179,6 +184,7 @@ declare module 'vue' {
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useBackup: UnwrapRef<typeof import('./features/backup/composables/useBackup')['useBackup']>
     readonly useCollaboration: UnwrapRef<typeof import('./features/collaboration/useCollaboration')['useCollaboration']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>

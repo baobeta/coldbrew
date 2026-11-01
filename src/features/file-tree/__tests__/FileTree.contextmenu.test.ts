@@ -41,6 +41,20 @@ describe('FileTree context menu', () => {
     wrapper.unmount();
   });
 
+  it('exports a folder from the context menu', async () => {
+    const wrapper = mount(FileTree, {
+      props: { tree, activePageId: null, expandedFolders: new Set(['a']) },
+      attachTo: document.body,
+    });
+    await forceVirtualListRender(wrapper);
+
+    await wrapper.find('[data-test="tree-row"]').trigger('contextmenu');
+    await wrapper.find('[data-test="export-node"]').trigger('click');
+
+    expect(wrapper.emitted('export-node')).toEqual([['a']]);
+    wrapper.unmount();
+  });
+
   it('creates a canvas inside a folder from the context menu', async () => {
     const wrapper = mount(FileTree, {
       props: { tree, activePageId: null, expandedFolders: new Set(['a']) },

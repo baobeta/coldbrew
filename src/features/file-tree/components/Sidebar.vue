@@ -81,6 +81,46 @@
               />
             </svg>
           </button>
+          <button
+            data-test="export-room"
+            class="w-[26px] h-[26px] flex items-center justify-center border-none rounded bg-transparent text-text-muted cursor-pointer transition-all hover:bg-black/5 hover:text-text"
+            @click="$emit('export-room')"
+            title="Export room"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 2v8M5 7l3 3 3-3M3 11v2h10v-2"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            data-test="import-backup"
+            class="w-[26px] h-[26px] flex items-center justify-center border-none rounded bg-transparent text-text-muted cursor-pointer transition-all hover:bg-black/5 hover:text-text"
+            @click="fileInput.click()"
+            title="Import backup"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 10V2M5 5l3-3 3 3M3 11v2h10v-2"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <input
+            ref="fileInput"
+            data-test="import-file"
+            type="file"
+            accept=".json"
+            class="hidden"
+            @change="onFileChosen"
+          />
         </div>
       </div>
       <FileTree
@@ -94,12 +134,14 @@
         @create-page="$emit('create-page', $event)"
         @create-canvas="$emit('create-canvas', $event)"
         @create-folder="$emit('create-folder', $event)"
+        @export-node="$emit('export-node', $event)"
       />
     </div>
   </aside>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import FileTree from './FileTree.vue';
 import ParticipantsList from './ParticipantsList.vue';
 
@@ -111,7 +153,7 @@ defineProps({
   participants: { type: Array, default: () => [] },
 });
 
-defineEmits([
+const emit = defineEmits([
   'create-page',
   'create-canvas',
   'create-folder',
@@ -119,5 +161,17 @@ defineEmits([
   'toggle-folder',
   'rename',
   'delete',
+  'export-room',
+  'export-node',
+  'import-file',
 ]);
+
+const fileInput = ref(null);
+
+function onFileChosen(event) {
+  const [file] = event.target.files;
+  // Clearing the value lets the same file be chosen again after a failed import.
+  event.target.value = '';
+  if (file) emit('import-file', file);
+}
 </script>
