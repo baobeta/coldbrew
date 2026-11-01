@@ -73,10 +73,10 @@ The sync server should need no changes, because it only relays Yjs updates.
 Each finished stroke is one immutable item in the `strokes` Y.Array:
 
 ```ts
-{ id, tool, color, size, pts: Uint8Array }
+{ id, tool, color, size, simulatePressure, pts: Uint8Array }
 ```
 
-`pts` uses delta encoding and varints, with 0.1 canvas-unit precision and 8-bit pressure. Coordinates are canvas coordinates, not screen coordinates.
+`pts` uses delta encoding and varints, with 0.1 canvas-unit precision and 8-bit pressure. Coordinates are canvas coordinates, not screen coordinates. `simulatePressure` tells other users how to draw the stroke.
 
 Benchmark with 3,000 synthetic strokes of 60 points each, on Yjs 13.6.33:
 
@@ -137,7 +137,7 @@ The tablet's shortcut keys can send these through the XP-Pen driver. Erasing doe
 
 ### Receiving strokes
 
-Other users see the awareness preview first. Send only new points, because resending the whole stroke cost about 9× more in testing. When the finished stroke arrives, it replaces the preview, so a lost preview update fixes itself.
+Other users see the awareness preview first. Send only new points, because resending the whole stroke cost about 9× more in testing. The sender writes the finished stroke first, then clears its preview, so a lost preview update fixes itself. Clearing the preview on that signal also means it can't be left behind as a ghost stroke.
 
 ### Rendering
 
