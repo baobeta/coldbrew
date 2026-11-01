@@ -7,6 +7,9 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue').EffectScope
+  const STROKE_COLORS: typeof import('./features/canvas/composables/useToolSettings').STROKE_COLORS
+  const STROKE_SIZES: typeof import('./features/canvas/composables/useToolSettings').STROKE_SIZES
+  const canvasToScreen: typeof import('./features/canvas/composables/useViewport').canvasToScreen
   const collaborationCursor: typeof import('./features/collaboration/collaborationCursor').default
   const compareWords: typeof import('./features/editor/composables/usePractice').compareWords
   const computed: typeof import('vue').computed
@@ -28,6 +31,7 @@ declare global {
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
   const levenshtein: typeof import('./features/editor/composables/usePractice').levenshtein
+  const loadView: typeof import('./features/canvas/composables/useViewport').loadView
   const markRaw: typeof import('vue').markRaw
   const nextTick: typeof import('vue').nextTick
   const normalize: typeof import('./features/editor/composables/usePractice').normalize
@@ -45,11 +49,13 @@ declare global {
   const onUnmounted: typeof import('vue').onUnmounted
   const onUpdated: typeof import('vue').onUpdated
   const onWatcherCleanup: typeof import('vue').onWatcherCleanup
+  const panBy: typeof import('./features/canvas/composables/useViewport').panBy
   const provide: typeof import('vue').provide
   const reactive: typeof import('vue').reactive
   const readonly: typeof import('vue').readonly
   const ref: typeof import('vue').ref
   const resolveComponent: typeof import('vue').resolveComponent
+  const screenToCanvas: typeof import('./features/canvas/composables/useViewport').screenToCanvas
   const setStoredUserName: typeof import('./features/documents/useLocalStorage').setStoredUserName
   const shallowReactive: typeof import('vue').shallowReactive
   const shallowReadonly: typeof import('vue').shallowReadonly
@@ -69,23 +75,32 @@ declare global {
   const useFileTree: typeof import('./features/file-tree/composables/useFileTree').useFileTree
   const useFlattenedTree: typeof import('./features/file-tree/composables/useFlattenedTree').useFlattenedTree
   const useId: typeof import('vue').useId
+  const useLiveEditor: typeof import('./features/editor/composables/useLiveEditor').useLiveEditor
+  const useLivePreview: typeof import('./features/canvas/composables/useLivePreview').useLivePreview
   const useModel: typeof import('vue').useModel
   const usePageDocs: typeof import('./features/documents/usePageDocs').usePageDocs
   const usePiperTTS: typeof import('./features/editor/composables/usePiperTTS').usePiperTTS
   const usePractice: typeof import('./features/editor/composables/usePractice').usePractice
   const useSlots: typeof import('vue').useSlots
+  const useStrokes: typeof import('./features/canvas/composables/useStrokes').useStrokes
   const useTemplateRef: typeof import('vue').useTemplateRef
+  const useToolSettings: typeof import('./features/canvas/composables/useToolSettings').useToolSettings
+  const useViewport: typeof import('./features/canvas/composables/useViewport').useViewport
   const useVoiceCapture: typeof import('./features/editor/composables/useVoiceCapture').useVoiceCapture
   const watch: typeof import('vue').watch
   const watchEffect: typeof import('vue').watchEffect
   const watchPostEffect: typeof import('vue').watchPostEffect
   const watchSyncEffect: typeof import('vue').watchSyncEffect
+  const zoomAt: typeof import('./features/canvas/composables/useViewport').zoomAt
 }
 // for type re-export
 declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { InkUpdate, LivePreview } from './features/canvas/composables/useLivePreview'
+  import('./features/canvas/composables/useLivePreview')
   // @ts-ignore
   export type { WordResult, PracticeState } from './features/editor/composables/usePractice'
   import('./features/editor/composables/usePractice')
@@ -103,6 +118,9 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly STROKE_COLORS: UnwrapRef<typeof import('./features/canvas/composables/useToolSettings')['STROKE_COLORS']>
+    readonly STROKE_SIZES: UnwrapRef<typeof import('./features/canvas/composables/useToolSettings')['STROKE_SIZES']>
+    readonly canvasToScreen: UnwrapRef<typeof import('./features/canvas/composables/useViewport')['canvasToScreen']>
     readonly collaborationCursor: UnwrapRef<typeof import('./features/collaboration/collaborationCursor')['default']>
     readonly compareWords: UnwrapRef<typeof import('./features/editor/composables/usePractice')['compareWords']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
@@ -124,6 +142,7 @@ declare module 'vue' {
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
     readonly levenshtein: UnwrapRef<typeof import('./features/editor/composables/usePractice')['levenshtein']>
+    readonly loadView: UnwrapRef<typeof import('./features/canvas/composables/useViewport')['loadView']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
     readonly normalize: UnwrapRef<typeof import('./features/editor/composables/usePractice')['normalize']>
@@ -141,11 +160,13 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly panBy: UnwrapRef<typeof import('./features/canvas/composables/useViewport')['panBy']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
+    readonly screenToCanvas: UnwrapRef<typeof import('./features/canvas/composables/useViewport')['screenToCanvas']>
     readonly setStoredUserName: UnwrapRef<typeof import('./features/documents/useLocalStorage')['setStoredUserName']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
@@ -165,16 +186,22 @@ declare module 'vue' {
     readonly useFileTree: UnwrapRef<typeof import('./features/file-tree/composables/useFileTree')['useFileTree']>
     readonly useFlattenedTree: UnwrapRef<typeof import('./features/file-tree/composables/useFlattenedTree')['useFlattenedTree']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
+    readonly useLiveEditor: UnwrapRef<typeof import('./features/editor/composables/useLiveEditor')['useLiveEditor']>
+    readonly useLivePreview: UnwrapRef<typeof import('./features/canvas/composables/useLivePreview')['useLivePreview']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly usePageDocs: UnwrapRef<typeof import('./features/documents/usePageDocs')['usePageDocs']>
     readonly usePiperTTS: UnwrapRef<typeof import('./features/editor/composables/usePiperTTS')['usePiperTTS']>
     readonly usePractice: UnwrapRef<typeof import('./features/editor/composables/usePractice')['usePractice']>
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
+    readonly useStrokes: UnwrapRef<typeof import('./features/canvas/composables/useStrokes')['useStrokes']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
+    readonly useToolSettings: UnwrapRef<typeof import('./features/canvas/composables/useToolSettings')['useToolSettings']>
+    readonly useViewport: UnwrapRef<typeof import('./features/canvas/composables/useViewport')['useViewport']>
     readonly useVoiceCapture: UnwrapRef<typeof import('./features/editor/composables/useVoiceCapture')['useVoiceCapture']>
     readonly watch: UnwrapRef<typeof import('vue')['watch']>
     readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
     readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>
     readonly watchSyncEffect: UnwrapRef<typeof import('vue')['watchSyncEffect']>
+    readonly zoomAt: UnwrapRef<typeof import('./features/canvas/composables/useViewport')['zoomAt']>
   }
 }

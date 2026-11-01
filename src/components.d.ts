@@ -11,6 +11,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CanvasEditor: typeof import('./features/canvas/components/CanvasEditor.vue')['default']
+    CanvasToolbar: typeof import('./features/canvas/components/CanvasToolbar.vue')['default']
     ErrorBoundary: typeof import('./shared/components/ErrorBoundary.vue')['default']
     FileTree: typeof import('./features/file-tree/components/FileTree.vue')['default']
     Icon: typeof import('./shared/components/Icon.vue')['default']

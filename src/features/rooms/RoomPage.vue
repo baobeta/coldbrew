@@ -7,6 +7,7 @@
       :expanded-folders="expandedFolders"
       :participants="participants"
       @create-page="createPage('Untitled', $event)"
+      @create-canvas="createPage('Untitled', $event, 'canvas')"
       @create-folder="createFolder('New Folder', $event)"
       @select-page="setActivePage"
       @toggle-folder="toggleFolder"
@@ -30,6 +31,7 @@
         >
           <template #right>
             <MicButton
+              v-if="!isCanvasPage"
               :is-listening="isListening"
               :is-supported="isSupported"
               :speaker-name="speakerName"
@@ -54,7 +56,15 @@
           to the server while connected.
         </div>
       </div>
-      <div class="flex-1 overflow-y-auto">
+      <CanvasEditor
+        v-if="activePageId && isCanvasPage"
+        :key="activePageId"
+        class="flex-1 min-h-0"
+        :page-id="activePageId"
+        :strokes="currentPage?.strokes"
+        :provider="currentPage?.provider"
+      />
+      <div v-else class="flex-1 overflow-y-auto">
         <TiptapEditor
           v-if="activePageId"
           :key="activePageId"
@@ -100,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const SPEED_OPTIONS = [0.5, 0.75, 1];
 const SPEED_LABELS = ['0.5x', '0.75x', '1x'];
@@ -110,6 +120,7 @@ const speedLabel = computed(() => SPEED_LABELS[speedIndex.value]);
 function cycleSpeed() {
   speedIndex.value = (speedIndex.value + 1) % SPEED_OPTIONS.length;
 }
+import CanvasEditor from '@/features/canvas/components/CanvasEditor.vue';
 import TiptapEditor from '@/features/editor/components/TiptapEditor.vue';
 import Toolbar from '@/features/editor/components/Toolbar.vue';
 import Sidebar from '@/features/file-tree/components/Sidebar.vue';
@@ -121,6 +132,7 @@ import { useCollaboration } from '@/features/collaboration/useCollaboration';
 import { useFileTree } from '@/features/file-tree/composables/useFileTree';
 import { usePageDocs } from '@/features/documents/usePageDocs';
 import { useVoiceCapture } from '@/features/editor/composables/useVoiceCapture';
+import { useLiveEditor } from '@/features/editor/composables/useLiveEditor';
 import { usePractice } from '@/features/editor/composables/usePractice';
 import { usePiperTTS } from '@/features/editor/composables/usePiperTTS';
 
@@ -130,7 +142,6 @@ const props = defineProps({
 });
 
 const sidebarOpen = ref(window.innerWidth >= 768);
-const liveEditor = ref(null);
 
 const {
   ydoc,
@@ -145,6 +156,7 @@ const {
 const {
   tree,
   activePageId,
+  activePageKind,
   expandedFolders,
   createPage,
   createFolder,
@@ -154,6 +166,9 @@ const {
   setActivePage,
   toggleFolder,
 } = useFileTree(ydoc, provider, props.initialPageId);
+
+const isCanvasPage = computed(() => activePageKind.value === 'canvas');
+const liveEditor = useLiveEditor(activePageId);
 
 const pageDocs = usePageDocs(props.roomId);
 
@@ -217,7 +232,7 @@ const statusText = computed(() => {
 
 function handleKeydown(e) {
   const mod = e.metaKey || e.ctrlKey;
-  if (mod && e.key === 'm') {
+  if (mod && e.key === 'm' && !isCanvasPage.value) {
     e.preventDefault();
     toggleListening();
   }
@@ -226,6 +241,13 @@ function handleKeydown(e) {
     onStartPractice();
   }
 }
+
+// Canvas pages have no text to dictate into or practice with.
+watch(isCanvasPage, (isCanvas) => {
+  if (!isCanvas) return;
+  if (isListening.value) toggleListening();
+  closePractice();
+});
 
 onMounted(() => document.addEventListener('keydown', handleKeydown));
 onUnmounted(() => document.removeEventListener('keydown', handleKeydown));
