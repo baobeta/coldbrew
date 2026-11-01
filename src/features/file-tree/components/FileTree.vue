@@ -22,6 +22,7 @@
           @rename="$emit('rename', $event)"
           @delete="$emit('delete', $event)"
           @create-page="$emit('create-page', $event)"
+          @create-canvas="$emit('create-canvas', $event)"
           @create-folder="$emit('create-folder', $event)"
           @open-context-menu="contextMenu = $event"
         />
@@ -64,6 +65,29 @@
           />
         </svg>
         New Page
+      </button>
+      <button
+        v-if="contextMenu.node.type === 'folder'"
+        data-test="new-canvas"
+        class="flex items-center gap-2 w-full px-2.5 py-1.5 border-none bg-transparent text-[0.82rem] font-ui text-text text-left cursor-pointer rounded hover:bg-black/5"
+        @click="onContextAction('new-canvas')"
+      >
+        <svg
+          class="shrink-0 text-text-muted"
+          width="14"
+          height="14"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <path
+            d="M11.5 2.5l2 2-8 8H3.5v-2z"
+            stroke="currentColor"
+            stroke-width="1.2"
+            fill="none"
+            stroke-linejoin="round"
+          />
+        </svg>
+        New Canvas
       </button>
       <button
         v-if="contextMenu.node.type === 'folder'"
@@ -146,6 +170,7 @@ const emit = defineEmits([
   'rename',
   'delete',
   'create-page',
+  'create-canvas',
   'create-folder',
 ]);
 
@@ -186,6 +211,8 @@ function onContextAction(action) {
     }
   } else if (action === 'new-page') {
     emit('create-page', node.id);
+  } else if (action === 'new-canvas') {
+    emit('create-canvas', node.id);
   } else if (action === 'new-folder') {
     emit('create-folder', node.id);
   }

@@ -40,4 +40,18 @@ describe('FileTree context menu', () => {
 
     wrapper.unmount();
   });
+
+  it('creates a canvas inside a folder from the context menu', async () => {
+    const wrapper = mount(FileTree, {
+      props: { tree, activePageId: null, expandedFolders: new Set(['a']) },
+      attachTo: document.body,
+    });
+    await forceVirtualListRender(wrapper);
+
+    await wrapper.find('[data-test="tree-row"]').trigger('contextmenu');
+    await wrapper.find('[data-test="new-canvas"]').trigger('click');
+
+    expect(wrapper.emitted('create-canvas')).toEqual([['a']]);
+    wrapper.unmount();
+  });
 });

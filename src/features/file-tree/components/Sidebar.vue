@@ -45,6 +45,22 @@
             </svg>
           </button>
           <button
+            data-test="new-canvas-button"
+            class="w-[26px] h-[26px] flex items-center justify-center border-none rounded bg-transparent text-text-muted cursor-pointer transition-all hover:bg-black/5 hover:text-text"
+            @click="$emit('create-canvas', null)"
+            title="New canvas"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M11.5 2.5l2 2-8 8H3.5v-2z"
+                stroke="currentColor"
+                stroke-width="1.2"
+                fill="none"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+          <button
             class="w-[26px] h-[26px] flex items-center justify-center border-none rounded bg-transparent text-text-muted cursor-pointer transition-all hover:bg-black/5 hover:text-text"
             @click="$emit('create-folder', null)"
             title="New folder"
@@ -76,6 +92,7 @@
         @rename="$emit('rename', $event)"
         @delete="$emit('delete', $event)"
         @create-page="$emit('create-page', $event)"
+        @create-canvas="$emit('create-canvas', $event)"
         @create-folder="$emit('create-folder', $event)"
       />
     </div>
@@ -94,5 +111,13 @@ defineProps({
   participants: { type: Array, default: () => [] },
 });
 
-defineEmits(['create-page', 'create-folder', 'select-page', 'toggle-folder', 'rename', 'delete']);
+defineEmits([
+  'create-page',
+  'create-canvas',
+  'create-folder',
+  'select-page',
+  'toggle-folder',
+  'rename',
+  'delete',
+]);
 </script>

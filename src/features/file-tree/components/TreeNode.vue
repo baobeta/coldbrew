@@ -61,6 +61,22 @@
             stroke-linejoin="round"
           />
         </svg>
+        <svg
+          v-else-if="node.kind === 'canvas'"
+          data-test="canvas-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <path
+            d="M11.5 2.5l2 2-8 8H3.5v-2z"
+            stroke="#94a3b8"
+            stroke-width="1.2"
+            fill="#f1f5f9"
+            stroke-linejoin="round"
+          />
+        </svg>
         <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path
             d="M4.5 1.5h5l3 3v9.5h-8z"
@@ -112,6 +128,7 @@
         @rename="$emit('rename', $event)"
         @delete="$emit('delete', $event)"
         @create-page="$emit('create-page', $event)"
+        @create-canvas="$emit('create-canvas', $event)"
         @create-folder="$emit('create-folder', $event)"
         @open-context-menu="$emit('open-context-menu', $event)"
       />
@@ -137,6 +154,7 @@ const emit = defineEmits([
   'rename',
   'delete',
   'create-page',
+  'create-canvas',
   'create-folder',
   'open-context-menu',
 ]);
