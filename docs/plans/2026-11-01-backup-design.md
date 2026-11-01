@@ -31,7 +31,7 @@ One JSON file, `*.coldbrew.json`, with `format`, `version`, `exportedAt`, `check
 
 - Limits: 50 MB, 2,000 pages, nesting depth 32.
 - Unknown fields, node kinds and tools are rejected.
-- Text must pass the editor schema. Links must be `http`, `https` or `mailto`.
+- Text must pass the editor schema. Links must be relative or use `http`, `https`, `mailto` or `tel`.
 - Stroke bytes must decode.
 - Export runs this same validation before downloading, so a file that can't be restored is never saved.
 

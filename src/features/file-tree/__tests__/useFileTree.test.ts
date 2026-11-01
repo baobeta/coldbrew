@@ -103,6 +103,32 @@ describe('useFileTree', () => {
     expect(fileTree.activePageKind.value).toBe('canvas');
   });
 
+  it('restores a tree into one new folder without changing existing pages', async () => {
+    const existing = fileTree.createPage('Keep me');
+    await frame();
+    const updates = vi.fn();
+    ydoc.on('update', updates);
+    const folderId = fileTree.restoreTree('Restored 2026-11-01', [
+      {
+        id: 'f1',
+        type: 'folder',
+        title: 'Notes',
+        children: [{ id: 'p1', type: 'page', kind: 'text', title: 'Plan' }],
+      },
+      { id: 'c1', type: 'page', kind: 'canvas', title: 'Sketch' },
+    ]);
+    await frame();
+    expect(updates).toHaveBeenCalledOnce();
+    expect(fileTree.activePageId.value).toBe(existing);
+    expect(fileTree.tree.value.find((n) => n.id === existing)!.title).toBe('Keep me');
+    const restored = fileTree.tree.value.find((n) => n.id === folderId)!;
+    expect(restored.title).toBe('Restored 2026-11-01');
+    expect(fileTree.expandedFolders.value.has(folderId)).toBe(true);
+    const [notes, sketch] = restored.children!;
+    expect(notes.children![0]).toMatchObject({ id: 'p1', kind: 'text', title: 'Plan' });
+    expect(sketch).toMatchObject({ id: 'c1', kind: 'canvas', title: 'Sketch' });
+  });
+
   it('creates a folder at root', async () => {
     const id = fileTree.createFolder('My Folder');
     await frame();

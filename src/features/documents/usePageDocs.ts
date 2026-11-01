@@ -19,6 +19,14 @@ interface Entry extends PageDocHandle {
 
 const MAX_LOADED = 4;
 
+export function pageRoomName(roomId: string, pageId: string): string {
+  return `writeboard-${roomId}--page--${pageId}`;
+}
+
+export function pageDbName(roomId: string, pageId: string): string {
+  return `writeboard-doc-${roomId}--page--${pageId}`;
+}
+
 export function usePageDocs(roomId: string) {
   const cache = new Map<string, Entry>();
   let clock = 0; // monotonic counter (deterministic; avoids Date.now)
@@ -30,9 +38,9 @@ export function usePageDocs(roomId: string) {
       return existing;
     }
     const ydoc = new Y.Doc();
-    const room = `writeboard-${roomId}--page--${pageId}`;
+    const room = pageRoomName(roomId, pageId);
     const provider = new WebsocketProvider(config.websocketServer, room, ydoc);
-    const indexeddb = new IndexeddbPersistence(`writeboard-doc-${roomId}--page--${pageId}`, ydoc);
+    const indexeddb = new IndexeddbPersistence(pageDbName(roomId, pageId), ydoc);
     const fragment = ydoc.getXmlFragment('content');
     const strokes = ydoc.getArray<StrokeRecord>('strokes');
     const entry: Entry = { ydoc, provider, indexeddb, fragment, strokes, lastUsed: ++clock };

@@ -140,6 +140,26 @@ export function useFileTree(
     return id;
   }
 
+  function insertNode(node: TreeNode, parentId: string | null): void {
+    const nodeMap = new Y.Map();
+    nodeMap.set('id', node.id);
+    nodeMap.set('type', node.type);
+    if (node.type === 'page') nodeMap.set('kind', node.kind ?? 'text');
+    nodeMap.set('title', node.title);
+    nodeMap.set('parentId', parentId);
+    nodesMap.set(node.id, nodeMap);
+    getParentArray(parentId).push([node.id]);
+    for (const child of node.children ?? []) insertNode(child, node.id);
+  }
+
+  // One transaction, so other users see the whole restored folder appear at once.
+  function restoreTree(title: string, nodes: TreeNode[]): string {
+    const id = nanoid(8);
+    ydoc.transact(() => insertNode({ id, type: 'folder', title, children: nodes }, null));
+    expandedFolders.value = new Set([...expandedFolders.value, id]);
+    return id;
+  }
+
   function rename(id: string, newTitle: string): void {
     const nodeMap = nodesMap.get(id);
     if (nodeMap) nodeMap.set('title', newTitle);
@@ -353,6 +373,7 @@ export function useFileTree(
     expandedFolders,
     createPage,
     createFolder,
+    restoreTree,
     rename,
     deleteNode,
     moveNode,
